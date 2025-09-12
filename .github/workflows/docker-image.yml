@@ -24,7 +24,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./judge-image-for-worker/workers
           file: Dockerfile
           push: true
           tags: lightningsagar/worker:${{ github.sha }}
