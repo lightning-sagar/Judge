@@ -1,0 +1,57 @@
+name: CI dev
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'judge-image-for-worker/**'
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PERSONAL_ACCESS_TOKEN }}
+
+      - name: set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: lightningsagar/worker:${{ github.sha }}
+
+      - name: Clone staging ops/repo
+        env:
+          GITHUB_PAT: ${{ secrets.PAT }}
+        run: |
+          git clone https://github.com/lightning-sagar/Judge.git
+          cd Judge/worker-ops/worker-ops
+          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" judge-workers.yml
+          cd ../..
+
+      - name: update the documentation
+        env:
+          GITHUB_PAT: ${{ secrets.PAT }}
+        run: |
+          echo "Worker image updated to ${{ github.sha }}"
+          cd Judge/docs/src/app/selfhost
+          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" page.tsx
+          cd ../..
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "action@github.com"
+          git add .
+          git commit -m "Update image to ${{ github.sha }}"
+          git push https://${GITHUB_PAT}@github.com/lightning-sagar/Judge.git main
+          cd ../..
+          rm -rf Judge
+          echo "Completed and updated the Docs."
+    
