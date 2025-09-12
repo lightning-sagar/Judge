@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./judge-image-for-worker/workers
-          file: Dockerfile
+          file: ./judge-image-for-worker/workers/Dockerfile
           push: true
           tags: lightningsagar/worker:${{ github.sha }}
 
