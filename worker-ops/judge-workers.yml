@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: judge-worker
-          image: lightningsagar/worker:4
+          image: lightningsagar/worker:09cb371804806f75b01aa0c45ec68fb8a93474fd
           ports:
             - containerPort: 5000
           env:
