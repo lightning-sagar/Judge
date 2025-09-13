@@ -29,24 +29,22 @@ jobs:
           push: true
           tags: lightningsagar/worker:${{ github.sha }}
 
-      - name: Clone staging ops/repo
+      - name: Clone staging ops/repo and Documentation
         env:
           GITHUB_PAT: ${{ secrets.PAT }}
         run: |
           git clone https://github.com/lightning-sagar/Judge.git
-          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" Judge/worker-ops/judge-workers.yml
-          echo "updated the judge-workers.yml"
+          cd Judge
+
+          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" worker-ops/judge-workers.yml
+          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" docs/src/app/selfhost/page.tsx
           
-      - name: update the documentation
-        env:
-          GITHUB_PAT: ${{ secrets.PAT }}
-        run: |
-          echo "Worker image updated to ${{ github.sha }}"
-          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" Judge/docs/src/app/selfhost/page.tsx
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "action@github.com"
+
           git add .
           git commit -m "Update image to ${{ github.sha }}"
           git push https://${GITHUB_PAT}@github.com/lightning-sagar/Judge.git main
+
           echo "Completed and updated the Docs."
     
