@@ -47,6 +47,7 @@ jobs:
           cd Judge/docs/src/app/selfhost
           sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" page.tsx
           cd ../../..
+          ls
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "action@github.com"
           git add .
