@@ -24,9 +24,9 @@ spec:
             - name: PORT
               value: "5000"
             - name: host_redis
-              value: "host_redis"
+              value: "redis-19417.c270.us-east-1-3.ec2.redns.redis-cloud.com"
             - name: password_redis
-              value: "password_redis"
+              value: "e5qUny4OV6WiMnOPWt4bRM9NmEmOYa91"
           resources:
             requests:
               memory: "256Mi"
@@ -55,7 +55,7 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-      nodePort: 30001
+      nodePort: 30000
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
