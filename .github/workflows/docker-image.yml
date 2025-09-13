@@ -37,7 +37,7 @@ jobs:
           cd Judge/worker-ops/
           ls
           sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" judge-workers.yml
-          cd ../..
+          cd ../../../../
 
       - name: update the documentation
         env:
