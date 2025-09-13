@@ -177,7 +177,7 @@ export default function SelfHostPage() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
-                    <code>docker pull lightningsagar/worker:latest</code>
+                    <code>docker pull lightningsagar/worker:741b8fd5e52879389f61e6847b61c39d88298fc1
                   </div>
 
                   <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
@@ -189,7 +189,7 @@ export default function SelfHostPage() {
                     </div>
                     <code className="break-all">
                       docker run -e password_redis="your_password" -e host_redis="your_host" -p 5000:5000
-                      lightningsagar/worker:latest
+                      lightningsagar/worker:741b8fd5e52879389f61e6847b61c39d88298fc1
                     </code>
                   </div>
                 </div>
