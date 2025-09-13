@@ -34,8 +34,9 @@ jobs:
           GITHUB_PAT: ${{ secrets.PAT }}
         run: |
           git clone https://github.com/lightning-sagar/Judge.git
-          ls
           cd Judge/worker-ops/worker-ops
+          ls
+          echo "ls are "
           sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" judge-workers.yml
           cd ../..
 
