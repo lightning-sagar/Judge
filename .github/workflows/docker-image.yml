@@ -52,6 +52,5 @@ jobs:
           git commit -m "Update image to ${{ github.sha }}"
           git push https://${GITHUB_PAT}@github.com/lightning-sagar/Judge.git main
           cd ../..
-          rm -rf Judge
           echo "Completed and updated the Docs."
     
