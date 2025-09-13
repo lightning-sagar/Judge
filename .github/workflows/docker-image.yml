@@ -37,13 +37,13 @@ jobs:
           cd Judge
 
           sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" worker-ops/judge-workers.yml
-          sed -i "s|image: lightningsagar/worker:.*|image: lightningsagar/worker:${{ github.sha }}|" docs/src/app/selfhost/page.tsx
+          sed -i "s|lightningsagar/worker:.*|lightningsagar/worker:${{ github.sha }}|" docs/src/app/selfhost/page.tsx
           
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "action@github.com"
 
           git add .
-          git commit -m "Update image to ${{ github.sha }}"
+          git commit -m "Updated the image tag"
           git push https://${GITHUB_PAT}@github.com/lightning-sagar/Judge.git main
 
           echo "Completed and updated the Docs."
