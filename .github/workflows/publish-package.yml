@@ -19,7 +19,11 @@ jobs:
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
-        run: npm publish
+        run: |
+          git clone https://github.com/lightning-sagar/Judge.git
+          cd Judge/lib
+          ls
+          npm publish
         
 
 
