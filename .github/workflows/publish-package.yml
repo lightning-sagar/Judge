@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'lib/**'
+      - "lib/**"
 
 jobs:
   publish-package:
@@ -16,8 +16,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org/"
 
       - name: Clone Judge Repo
         run: |
@@ -26,6 +26,8 @@ jobs:
           ls
 
       - name: Update Package Version (Patch)
+        env:
+          GITHUB_PAT: ${{ secrets.PAT }}
         run: |
           cd Judge/lib
           npm version patch
@@ -33,7 +35,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "chore: bump patch version [skip ci]"
-          git push origin main --follow-tags
+          git push https://${GITHUB_PAT}@github.com/lightning-sagar/Judge.git main
 
       - name: Publish Package
         env:
