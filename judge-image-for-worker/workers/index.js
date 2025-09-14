@@ -3,11 +3,14 @@ import fs from "fs";
 import path from "path";
 import { exec, spawn } from "child_process";
 import { fileURLToPath } from "url";
+import os from "os";
 import "dotenv/config";
-import { connectredis } from "./redis/redis.js";
 import cors from "cors";
+import { connectredis } from "./redis/redis.js";
 
 const app = express();
+
+// Allowed origins
 const allowedOrigins = [
   "https://judge-lib-mg91.vercel.app",
   "https://judge-lib-mg91.vercel.app/npm",
@@ -15,45 +18,59 @@ const allowedOrigins = [
   "https://judge-lib-mg91.vercel.app/microservice",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const WORKER_FIELD = "worker_0";
+
+// Unique worker ID
+const WORKER_FIELD =
+  process.env.WORKER_FIELD || `worker_${os.hostname()}_${Date.now()}`;
+
+console.log("Worker ID:", WORKER_FIELD);
+
 const port = 5000;
 const redis_server = await connectredis();
 
+
+// -----------------------------------
+// Code Compilation Logic
+// -----------------------------------
 async function compileCode(language, codePath, execPath) {
-  if (language === "cpp") {
-    return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    if (language === "cpp") {
       exec(`g++ "${codePath}" -o "${execPath}"`, { timeout: 10000 }, (err, _, stderr) => {
         if (err) return reject("C++ Compilation Error:\n" + stderr);
         resolve();
       });
-    });
-  } else if (language === "java") {
-    return new Promise((resolve, reject) => {
+    } else if (language === "java") {
       exec(`javac "${codePath}"`, { timeout: 10000 }, (err, _, stderr) => {
         if (err) return reject("Java Compilation Error:\n" + stderr);
         resolve();
       });
-    });
-  }
-  return Promise.resolve();
+    } else {
+      resolve(); // Python or interpreted languages don’t need compilation
+    }
+  });
 }
 
+// -----------------------------------
+// Testcase Execution Logic
+// -----------------------------------
 function runTestcase(language, execPath, input, expected_output, timeoutSec, ques_name) {
   return new Promise((resolve) => {
     const timeoutMs = timeoutSec * 1000;
@@ -63,18 +80,12 @@ function runTestcase(language, execPath, input, expected_output, timeoutSec, que
       if (language === "cpp") {
         run = spawn(execPath, [], { stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "java") {
-        run = spawn("java", ["Main"], {
-          cwd: execPath,
-          stdio: ["pipe", "pipe", "pipe"],
-        });
+        run = spawn("java", ["Main"], { cwd: execPath, stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "python" || language === "py") {
         const pythonCmd = process.platform === "win32" ? "python" : "python3";
-        run = spawn(pythonCmd, [execPath], {
-          stdio: ["pipe", "pipe", "pipe"],
-        });
+        run = spawn(pythonCmd, [execPath], { stdio: ["pipe", "pipe", "pipe"] });
       } else {
         return resolve({
-          ques_name,
           input,
           expected_output,
           result: `Unsupported language: ${language}`,
@@ -83,18 +94,18 @@ function runTestcase(language, execPath, input, expected_output, timeoutSec, que
       }
     } catch (err) {
       return resolve({
-        ques_name,
         input,
         expected_output,
-        result: `Failed to spawn process: ${err.message}`,
+        result: `Failed to spawn process for ${language}: ${err.message}`,
         correct: false,
       });
     }
 
     let result = "";
     let errorOutput = "";
-    run.stdout.on("data", (data) => result += data.toString());
-    run.stderr.on("data", (data) => errorOutput += data.toString());
+
+    run.stdout.on("data", (data) => (result += data.toString()));
+    run.stderr.on("data", (data) => (errorOutput += data.toString()));
 
     const timer = setTimeout(() => run.kill("SIGKILL"), timeoutMs);
 
@@ -104,6 +115,7 @@ function runTestcase(language, execPath, input, expected_output, timeoutSec, que
     run.on("close", (code) => {
       clearTimeout(timer);
       let correct = false;
+
       if (code === 0 && expected_output) {
         correct = result.trim() === expected_output.trim();
       } else if (code === null) {
@@ -117,46 +129,63 @@ function runTestcase(language, execPath, input, expected_output, timeoutSec, que
   });
 }
 
+// -----------------------------------
+// Process a single job
+// -----------------------------------
 async function processJob(ques_name, code, language, testcases) {
   const extension = language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
   const fileName = `${ques_name}_${WORKER_FIELD}_${Date.now()}.${extension}`;
   const filePath = path.join(__dirname, fileName);
-  const execPath = language === "java" ? __dirname : filePath.replace(/\.\w+$/, "");
 
+  const execPath =
+    language === "java" ? __dirname : filePath.replace(/\.\w+$/, language === "cpp" ? ".exe" : ".py");
+
+  // Write user code to file
   fs.writeFileSync(filePath, code);
 
   try {
+    // Compile code (if needed)
     await compileCode(language, filePath, execPath);
 
+    // Run all test cases in parallel
     const results = await Promise.all(
       testcases.map((tc) =>
         runTestcase(language, execPath, tc.input, tc.expected_output, tc.timeout, ques_name)
       )
     );
 
-    // ✅ Write each testcase result separately for judge to fetch
-    for (let i = 0; i < results.length; i++) {
-      const key = `job:${ques_name}:${i}`;
-      await redis_server.setEx(key, 60, JSON.stringify(results[i]));
-      await redis_server.hSet(`job:${ques_name}:status`, { [i]: "completed" });
+    // Store results for this worker in Redis
+    await redis_server.setEx(
+      `job:${ques_name}:worker:${WORKER_FIELD}`,
+      30,
+      JSON.stringify(results)
+    );
 
-      console.log(`Testcase ${i} result written to Redis — Correct: ${results[i].correct}`);
-    }
+    // Mark this worker as completed
+    await redis_server.hSet(`job:${ques_name}:status`, {
+      [WORKER_FIELD]: "completed",
+    });
+    await redis_server.expire(`job:${ques_name}:status`, 30);
 
-    await redis_server.expire(`job:${ques_name}:status`, 60);
-
+    console.log(`Completed job ${ques_name} by ${WORKER_FIELD}`);
   } catch (err) {
     console.error("Error during job processing:", err);
+
+    // Store error for this worker
     await redis_server.setEx(
-      `job:${ques_name}:error`,
+      `job:${ques_name}:worker:${WORKER_FIELD}`,
       30,
       JSON.stringify([{ error: err.toString() }])
     );
+
     await redis_server.hSet(`job:${ques_name}:status`, {
-      [WORKER_FIELD]: "error",
+      [WORKER_FIELD]: "completed",
     });
   } finally {
-    try { fs.unlinkSync(filePath); } catch {}
+    // Cleanup files
+    try {
+      fs.unlinkSync(filePath);
+    } catch {}
     try {
       if (language === "cpp") fs.unlinkSync(execPath);
       if (language === "java") fs.unlinkSync(filePath.replace(".java", ".class"));
@@ -164,29 +193,43 @@ async function processJob(ques_name, code, language, testcases) {
   }
 }
 
+// -----------------------------------
+// Polling loop to get jobs
+// -----------------------------------
 async function pollForJobs() {
   while (true) {
     try {
       const { element: ques_name } = await redis_server.brPop("job_queue", 0);
-      console.log(`Got job: ${ques_name}`);
+      console.log(`Got job: ${ques_name} by ${WORKER_FIELD}`);
 
+      // Fetch job details
       const code = await redis_server.hGet(ques_name, "code");
       const language = await redis_server.hGet(ques_name, "language");
-      const data_testcases = await redis_server.hGet(ques_name, WORKER_FIELD);
-      if (!data_testcases) continue;
+      const data_testcases = await redis_server.hGet(ques_name, "testcases");
+
+      if (!data_testcases) {
+        console.warn(`No testcases found for job ${ques_name}`);
+        continue;
+      }
 
       const testcases = JSON.parse(data_testcases);
+
+      // Process all testcases for this job at once
       await processJob(ques_name, code, language, testcases);
     } catch (err) {
       console.error("Error while polling job:", err);
     }
   }
 }
+
 pollForJobs();
 
+// -----------------------------------
+// Health check endpoint
+// -----------------------------------
 app.get("/ping", (req, res) => {
   console.log("Ping received at", new Date().toISOString());
-  res.send("Worker is awake");
+  res.send(`Worker ${WORKER_FIELD} is awake`);
 });
 
 app.listen(port, () => {

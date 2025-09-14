@@ -15,14 +15,10 @@ spec:
     spec:
       containers:
         - name: judge-worker
-          image: lightningsagar/worker:596be60cb2e4f090fa5cd81f94cbaa40ad3d63ee
+          image: lightningsagar/worker:latest
           ports:
             - containerPort: 5000
           env:
-            - name: WORKER_FIELD
-              value: "worker_0"
-            - name: PORT
-              value: "5000"
             - name: host_redis
               value: "redis-19417.c270.us-east-1-3.ec2.redns.redis-cloud.com"
             - name: password_redis
