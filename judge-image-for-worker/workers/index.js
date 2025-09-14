@@ -67,7 +67,7 @@ async function compileCode(language, codePath, execPath) {
         resolve();
       });
     } else {
-      resolve(); // Python or interpreted languages don’t need compilation
+      resolve(); // Python or interpreted languages don't need compilation
     }
   });
 }
@@ -146,7 +146,10 @@ function runTestcase(
 // -----------------------------------
 // Process a single job
 // -----------------------------------
-async function processJob(ques_name, code, language, testcases) {
+async function processJob(jobKey, code, language, testcases) {
+  // Extract ques_name from jobKey for file naming
+  const ques_name = jobKey.split(':')[1] || 'unknown';
+  
   const extension =
     language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
   const fileName = `${ques_name}_${WORKER_FIELD}_${Date.now()}.${extension}`;
@@ -175,13 +178,13 @@ async function processJob(ques_name, code, language, testcases) {
       )
     );
 
+    // FIXED: Store results with correct Redis key format
     await redis_server.setEx(
-      `job:${ques_name}:worker:${WORKER_FIELD}`,
+      `${jobKey}:results`,
       60,  
       JSON.stringify(results)
     );
-    // ✅ Mark this worker as completed
-    console.log("this is ans: ", results)
+    console.log("Job results stored:", results);
     await redis_server.hSet(`job:${ques_name}:status`, {
       [WORKER_FIELD]: "completed",
     });
@@ -189,7 +192,7 @@ async function processJob(ques_name, code, language, testcases) {
   } catch (err) {
     console.error("Error during job processing:", err);
     await redis_server.setEx(
-      `job:${ques_name}:worker:${WORKER_FIELD}`,
+      `${jobKey}:results`,
       60,
       JSON.stringify([{ error: err.toString() }])
     );
@@ -214,23 +217,27 @@ async function processJob(ques_name, code, language, testcases) {
 async function pollForJobs() {
   while (true) {
     try {
-      const { element: ques_name } = await redis_server.brPop("job_queue", 0);
-      console.log(`Got job: ${ques_name} by ${WORKER_FIELD}`);
-      console.log("Resolved Worker ID at startup:", WORKER_FIELD);
-      // Fetch job details
-      const code = await redis_server.hGet(ques_name, "code");
-      const language = await redis_server.hGet(ques_name, "language");
-      const data_testcases = await redis_server.hGet(ques_name, "testcases");
+      // FIXED: Get the Redis key directly
+      const result = await redis_server.brPop("job_queue", 0);
+      const jobKey = result.element;
+      
+      console.log(`Got job: ${jobKey} by ${WORKER_FIELD}`);
+      
+      // FIXED: Fetch job details using the correct Redis key
+      const code = await redis_server.hGet(jobKey, "code");
+      const language = await redis_server.hGet(jobKey, "language");
+      const data_testcases = await redis_server.hGet(jobKey, "testcases");
 
       if (!data_testcases) {
-        console.warn(`No testcases found for job ${ques_name}`);
+        console.warn(`No testcases found for job ${jobKey}`);
         continue;
       }
 
       const testcases = JSON.parse(data_testcases);
+      console.log(`Processing ${testcases.length} testcases for job ${jobKey}`);
 
       // Process all testcases for this job at once
-      await processJob(ques_name, code, language, testcases);
+      await processJob(jobKey, code, language, testcases);
     } catch (err) {
       console.error("Error while polling job:", err);
     }
