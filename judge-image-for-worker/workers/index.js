@@ -38,8 +38,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Unique worker ID
-const WORKER_FIELD =
-  process.env.WORKER_FIELD || `worker_${os.hostname()}_${Date.now()}`;
+const WORKER_FIELD = process.env.WORKER_FIELD?.trim() || `worker_${os.hostname()}_${Math.floor(Date.now() / 1000)}`;
 
 console.log("Worker ID:", WORKER_FIELD);
 
@@ -201,7 +200,7 @@ async function pollForJobs() {
     try {
       const { element: ques_name } = await redis_server.brPop("job_queue", 0);
       console.log(`Got job: ${ques_name} by ${WORKER_FIELD}`);
-
+      console.log("Resolved Worker ID at startup:", WORKER_FIELD)
       // Fetch job details
       const code = await redis_server.hGet(ques_name, "code");
       const language = await redis_server.hGet(ques_name, "language");

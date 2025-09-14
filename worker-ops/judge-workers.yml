@@ -19,6 +19,10 @@ spec:
           ports:
             - containerPort: 5000
           env:
+            - name: WORKER_FIELD
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: host_redis
               value: "redis-19417.c270.us-east-1-3.ec2.redns.redis-cloud.com"
             - name: password_redis
