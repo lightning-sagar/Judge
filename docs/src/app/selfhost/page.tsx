@@ -178,7 +178,7 @@ export default function SelfHostPage() {
                       </Button>
                     </div>
                     <code>
-                      docker pull lightningsagar/worker:596be60cb2e4f090fa5cd81f94cbaa40ad3d63ee
+                      docker pull lightningsagar/worker:a2775979eb66baf4b04e258c4b6261248fb8b839
                     </code>
                   </div>
                 </div>
