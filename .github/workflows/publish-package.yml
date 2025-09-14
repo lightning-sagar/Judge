@@ -1,43 +1,43 @@
 name: Publish Package
+
 on:
   push:
     branches:
       - main
     paths:
       - 'lib/**'
+
 jobs:
   publish-package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Publish package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
+      - name: Clone Judge Repo
         run: |
           git clone https://github.com/lightning-sagar/Judge.git
           cd Judge/lib
           ls
+
+      - name: Update Package Version (Patch)
+        run: |
+          cd Judge/lib
+          npm version patch
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "chore: bump patch version [skip ci]"
+          git push origin main --follow-tags
+
+      - name: Publish Package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd Judge/lib
           npm publish
-        
-
-
-### may be for future use
-
-# - name: update package version
-#   run: | 
-#     npm version patch 
-#     git config --global user.name 'github-actions[bot]'
-#     git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-#     git push origin main --follow-tags
-# - name: Install dependencies
-#   run: npm install
-# - name: Build package
-#   run: npm run build
-
-### end! 
