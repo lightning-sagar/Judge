@@ -9,13 +9,13 @@ const main = async () => {
   console.log("getting started");
   const result = await judge({
     codePath,
-    ques_name: "sum of array" + uuid.sync(5), // must be unique
+    ques_name: "sum_of_array" + uuid.sync(5), // must be unique
     input: inputStr,
     output: outputStr,
     language: "cpp",
     timeout: "2",
     sizeout: "64",
-  });
+  });   
   console.log(result);
 };
 
