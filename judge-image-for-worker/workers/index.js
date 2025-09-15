@@ -51,10 +51,14 @@ const redis_server = await connectredis();
 async function compileCode(language, codePath, execPath) {
   return new Promise((resolve, reject) => {
     if (language === "cpp") {
-      exec(`g++ "${codePath}" -o "${execPath}"`, { timeout: 10000 }, (err, _, stderr) => {
-        if (err) return reject("C++ Compilation Error:\n" + stderr);
-        resolve();
-      });
+      exec(
+        `g++ "${codePath}" -o "${execPath}"`,
+        { timeout: 10000 },
+        (err, _, stderr) => {
+          if (err) return reject("C++ Compilation Error:\n" + stderr);
+          resolve();
+        }
+      );
     } else if (language === "java") {
       exec(`javac "${codePath}"`, { timeout: 10000 }, (err, _, stderr) => {
         if (err) return reject("Java Compilation Error:\n" + stderr);
@@ -75,6 +79,7 @@ function runTestcase(language, execPath, input, expected_output, timeoutSec, que
       if (language === "cpp") {
         run = spawn(execPath, [], { stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "java") {
+        // execPath should be the directory containing .class files
         run = spawn("java", ["Main"], { cwd: execPath, stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "python" || language === "py") {
         const pythonCmd = process.platform === "win32" ? "python" : "python3";
@@ -172,25 +177,33 @@ async function processJob(ques_name, code, language, testcases, assignedWorkerId
 async function pollForJobs() {
   while (true) {
     try {
-      // brPop returns object like { key, element } where element is the pushed string
+      // brPop returns object like { key, element } where element is the pushed string or Buffer
       const br = await redis_server.brPop("job_queue", 0);
       if (!br || !br.element) continue;
 
+      // --- robust parse of queue item ---
+      const raw = br.element;
+      const elemStr = Buffer.isBuffer(raw) ? raw.toString() : String(raw).trim();
+
       let payload;
       try {
-        payload = JSON.parse(br.element);
+        payload = JSON.parse(elemStr);
       } catch (err) {
-        console.warn("Queue item not JSON, treating as simple jobId:", br.element);
-        // If old-style push (just ques_name) is used, let any worker handle all testcases:
-        payload = { ques_name: br.element, workerId: null };
+        // fallback to legacy/raw redis-key form
+        console.warn("Queue item not JSON, treating as simple jobId:", elemStr);
+        // if judge previously pushed raw redisKey, use that as redisKey as well
+        payload = { ques_name: elemStr, workerId: null, redisKey: elemStr };
       }
 
-      const { ques_name, workerId } = payload;
-      console.log(`Got job payload: ${JSON.stringify(payload)} by pod ${WORKER_FIELD}`);
+      // Prefer payload.redisKey if provided by judge
+      const { ques_name, workerId, redisKey: rkFromPayload } = payload;
+      const redisKey = rkFromPayload
+        ? rkFromPayload
+        : workerId
+          ? `job:${ques_name}:worker:${workerId}`
+          : `job:${ques_name}`;
 
-      // If judge pushed per-worker payloads (with workerId), look in that worker-specific redis hash
-      // else fall back to single-job key `job:<ques_name>`
-      const redisKey = workerId ? `job:${ques_name}:worker:${workerId}` : `job:${ques_name}`;
+      console.log(`Got job payload: ${JSON.stringify(payload)} (using redisKey=${redisKey}) by pod ${WORKER_FIELD}`);
 
       // job was stored using hSet(redisKey, { code, language, testcases })
       const code = await redis_server.hGet(redisKey, "code");
@@ -198,7 +211,7 @@ async function pollForJobs() {
       const data_testcases = await redis_server.hGet(redisKey, "testcases");
 
       if (!data_testcases) {
-        console.warn(`No testcases found for job payload ${JSON.stringify(payload)}`);
+        console.warn(`No testcases found for redisKey=${redisKey} payload=${JSON.stringify(payload)}`);
         // continue to next queue item
         continue;
       }
