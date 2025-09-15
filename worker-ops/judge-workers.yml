@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: judge-worker
-          image: lightningsagar/worker:5522f1288800cab29f1179a7d52773d337b9d656
+          image: lightningsagar/worker:d719d3c32b857247fe7bac84b30c0254825ddc07
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
