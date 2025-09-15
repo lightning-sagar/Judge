@@ -1,3 +1,4 @@
+// worker-updated.js
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -10,7 +11,6 @@ import { connectredis } from "./redis/redis.js";
 
 const app = express();
 
-// Allowed origins
 const allowedOrigins = [
   "https://judge-lib-mg91.vercel.app",
   "https://judge-lib-mg91.vercel.app/npm",
@@ -37,91 +37,63 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Unique worker ID
+// Unique worker/pod name for logging
 const WORKER_FIELD =
   process.env.WORKER_FIELD?.trim() ||
   `worker_${os.hostname()}_${Math.floor(Date.now() / 1000)}`;
 
-console.log("Worker ID:", WORKER_FIELD);
+console.log("Resolved Worker ID at startup:", WORKER_FIELD);
 
 const port = 5000;
 const redis_server = await connectredis();
 
-// -----------------------------------
-// Code Compilation Logic
-// -----------------------------------
+// ---------- helpers ----------
 async function compileCode(language, codePath, execPath) {
   return new Promise((resolve, reject) => {
     if (language === "cpp") {
-      exec(
-        `g++ "${codePath}" -o "${execPath}"`,
-        { timeout: 10000 },
-        (err, _, stderr) => {
-          if (err) return reject("C++ Compilation Error:\n" + stderr);
-          resolve();
-        }
-      );
+      exec(`g++ "${codePath}" -o "${execPath}"`, { timeout: 10000 }, (err, _, stderr) => {
+        if (err) return reject("C++ Compilation Error:\n" + stderr);
+        resolve();
+      });
     } else if (language === "java") {
       exec(`javac "${codePath}"`, { timeout: 10000 }, (err, _, stderr) => {
         if (err) return reject("Java Compilation Error:\n" + stderr);
         resolve();
       });
     } else {
-      resolve(); // Python or interpreted languages don't need compilation
+      // python/no-compile languages
+      resolve();
     }
   });
 }
 
-// -----------------------------------
-// Testcase Execution Logic
-// -----------------------------------
-function runTestcase(
-  language,
-  execPath,
-  input,
-  expected_output,
-  timeoutSec,
-  ques_name
-) {
+function runTestcase(language, execPath, input, expected_output, timeoutSec, ques_name) {
   return new Promise((resolve) => {
     const timeoutMs = timeoutSec * 1000;
     let run;
-
     try {
       if (language === "cpp") {
         run = spawn(execPath, [], { stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "java") {
-        run = spawn("java", ["Main"], {
-          cwd: execPath,
-          stdio: ["pipe", "pipe", "pipe"],
-        });
+        run = spawn("java", ["Main"], { cwd: execPath, stdio: ["pipe", "pipe", "pipe"] });
       } else if (language === "python" || language === "py") {
         const pythonCmd = process.platform === "win32" ? "python" : "python3";
         run = spawn(pythonCmd, [execPath], { stdio: ["pipe", "pipe", "pipe"] });
       } else {
-        return resolve({
-          input,
-          expected_output,
-          result: `Unsupported language: ${language}`,
-          correct: false,
-        });
+        return resolve({ input, expected_output, result: `Unsupported language: ${language}`, correct: false });
       }
     } catch (err) {
-      return resolve({
-        input,
-        expected_output,
-        result: `Failed to spawn process for ${language}: ${err.message}`,
-        correct: false,
-      });
+      return resolve({ input, expected_output, result: `Failed to spawn: ${err.message}`, correct: false });
     }
 
     let result = "";
     let errorOutput = "";
+    run.stdout.on("data", (d) => (result += d.toString()));
+    run.stderr.on("data", (d) => (errorOutput += d.toString()));
 
-    run.stdout.on("data", (data) => (result += data.toString()));
-    run.stderr.on("data", (data) => (errorOutput += data.toString()));
-
-    const timer = setTimeout(() => run.kill("SIGKILL"), timeoutMs);
+    const timer = setTimeout(() => {
+      try { run.kill("SIGKILL"); } catch (_) {}
+    }, timeoutMs);
 
     run.stdin.write(input.replace(/\r\n/g, "\n").trim() + "\n");
     run.stdin.end();
@@ -129,128 +101,125 @@ function runTestcase(
     run.on("close", (code) => {
       clearTimeout(timer);
       let correct = false;
-
-      if (code === 0 && expected_output) {
+      if (code === 0 && expected_output !== undefined && expected_output !== null) {
         correct = result.trim() === expected_output.trim();
       } else if (code === null) {
         result = `Timeout exceeded (${timeoutMs}ms)`;
-      } else {
+      } else if (code !== 0) {
         result = `Runtime error (exit code ${code})\n${errorOutput}`;
       }
-
       resolve({ input, expected_output, result, correct, timeout: timeoutSec });
     });
   });
 }
 
-// -----------------------------------
-// Process a single job
-// -----------------------------------
-async function processJob(jobKey, code, language, testcases) {
-  // Extract ques_name from jobKey for file naming
-  const ques_name = jobKey.split(':')[1] || 'unknown';
-  
-  const extension =
-    language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
-  const fileName = `${ques_name}_${WORKER_FIELD}_${Date.now()}.${extension}`;
+// processJob now accepts the assignedWorkerId (the slot that judge created)
+async function processJob(ques_name, code, language, testcases, assignedWorkerId) {
+  const extension = language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
+  const fileName = `${ques_name.replace(/\s+/g, "_")}_${WORKER_FIELD}_${Date.now()}.${extension}`;
   const filePath = path.join(__dirname, fileName);
-  const execPath =
-    language === "java"
-      ? __dirname
-      : filePath.replace(/\.\w+$/, language === "cpp" ? ".exe" : ".py");
+  const execPath = language === "java" ? __dirname : filePath.replace(/\.\w+$/, language === "cpp" ? ".exe" : ".py");
 
   fs.writeFileSync(filePath, code);
 
   try {
     await compileCode(language, filePath, execPath);
 
-    // Run all testcases
+    // Run all testcases (parallel for speed)
     const results = await Promise.all(
       testcases.map((tc) =>
-        runTestcase(
-          language,
-          execPath,
-          tc.input,
-          tc.expected_output,
-          tc.timeout,
-          ques_name
-        )
+        runTestcase(language, execPath, tc.input, tc.expected_output, tc.timeout || 2.5, ques_name)
       )
     );
 
-    // FIXED: Store results with correct Redis key format
+    // Save results to a deterministic key that judge will read:
+    // job:<ques_name>:worker:<assignedWorkerId>:results
     await redis_server.setEx(
-      `${jobKey}:results`,
-      60,  
+      `job:${ques_name}:worker:${assignedWorkerId}:results`,
+      120,
       JSON.stringify(results)
     );
-    console.log("Job results stored:", results);
+
+    // Mark status for that worker slot. Value contains which pod actually ran it.
     await redis_server.hSet(`job:${ques_name}:status`, {
-      [WORKER_FIELD]: "completed",
+      [assignedWorkerId]: WORKER_FIELD,
     });
-    await redis_server.expire(`job:${ques_name}:status`, 30);
+    await redis_server.expire(`job:${ques_name}:status`, 120);
+
+    console.log(`Completed job ${ques_name} slot ${assignedWorkerId} by pod ${WORKER_FIELD}`);
   } catch (err) {
     console.error("Error during job processing:", err);
+
     await redis_server.setEx(
-      `${jobKey}:results`,
-      60,
+      `job:${ques_name}:worker:${assignedWorkerId}:results`,
+      120,
       JSON.stringify([{ error: err.toString() }])
     );
     await redis_server.hSet(`job:${ques_name}:status`, {
-      [WORKER_FIELD]: "completed",
+      [assignedWorkerId]: WORKER_FIELD,
     });
   } finally {
-    try {
-      fs.unlinkSync(filePath);
-    } catch {}
+    // cleanup
+    try { fs.unlinkSync(filePath); } catch (_) {}
     try {
       if (language === "cpp") fs.unlinkSync(execPath);
-      if (language === "java")
-        fs.unlinkSync(filePath.replace(".java", ".class"));
-    } catch {}
+      if (language === "java") fs.unlinkSync(filePath.replace(".java", ".class"));
+    } catch (_) {}
   }
 }
 
-// -----------------------------------
-// Polling loop to get jobs
-// -----------------------------------
+// ---------- main queue loop ----------
 async function pollForJobs() {
   while (true) {
     try {
-      // FIXED: Get the Redis key directly
-      const result = await redis_server.brPop("job_queue", 0);
-      const jobKey = result.element;
-      
-      console.log(`Got job: ${jobKey} by ${WORKER_FIELD}`);
-      
-      // FIXED: Fetch job details using the correct Redis key
-      const code = await redis_server.hGet(jobKey, "code");
-      const language = await redis_server.hGet(jobKey, "language");
-      const data_testcases = await redis_server.hGet(jobKey, "testcases");
+      // brPop returns object like { key, element } where element is the pushed string
+      const br = await redis_server.brPop("job_queue", 0);
+      if (!br || !br.element) continue;
+
+      let payload;
+      try {
+        payload = JSON.parse(br.element);
+      } catch (err) {
+        console.warn("Queue item not JSON, treating as simple jobId:", br.element);
+        // If old-style push (just ques_name) is used, let any worker handle all testcases:
+        payload = { ques_name: br.element, workerId: null };
+      }
+
+      const { ques_name, workerId } = payload;
+      console.log(`Got job payload: ${JSON.stringify(payload)} by pod ${WORKER_FIELD}`);
+
+      // If judge pushed per-worker payloads (with workerId), look in that worker-specific redis hash
+      // else fall back to single-job key `job:<ques_name>`
+      const redisKey = workerId ? `job:${ques_name}:worker:${workerId}` : `job:${ques_name}`;
+
+      // job was stored using hSet(redisKey, { code, language, testcases })
+      const code = await redis_server.hGet(redisKey, "code");
+      const language = await redis_server.hGet(redisKey, "language");
+      const data_testcases = await redis_server.hGet(redisKey, "testcases");
 
       if (!data_testcases) {
-        console.warn(`No testcases found for job ${jobKey}`);
+        console.warn(`No testcases found for job payload ${JSON.stringify(payload)}`);
+        // continue to next queue item
         continue;
       }
 
       const testcases = JSON.parse(data_testcases);
-      console.log(`Processing ${testcases.length} testcases for job ${jobKey}`);
 
-      // Process all testcases for this job at once
-      await processJob(jobKey, code, language, testcases);
+      // Process this worker-slot (if workerId present, pass it; else process whole job)
+      const assignedWorkerId = workerId || WORKER_FIELD;
+      await processJob(ques_name, code, language, testcases, assignedWorkerId);
     } catch (err) {
       console.error("Error while polling job:", err);
+      // small backoff to avoid tight error loop
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
 }
 
 pollForJobs();
 
-// -----------------------------------
-// Health check endpoint
-// -----------------------------------
+// health endpoint
 app.get("/ping", (req, res) => {
-  console.log("Ping received at", new Date().toISOString());
   res.send(`Worker ${WORKER_FIELD} is awake`);
 });
 
