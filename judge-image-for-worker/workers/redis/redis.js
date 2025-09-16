@@ -19,6 +19,7 @@ const connectredis = async () => {
     })
     .catch((err) => {
       console.log({ err: "error while connecting" });
+      return process.exit(1)
     });
 
   return client;

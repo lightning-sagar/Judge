@@ -20,21 +20,19 @@ spec:
           ports:
             - containerPort: 5000
           env:
-            - name: WORKER_FIELD
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
+            - name: PORT
+              value: '3000'
             - name: host_redis
-              value: "redis-19417.c270.us-east-1-3.ec2.redns.redis-cloud.com"
+              value: 'redis-10605.c81.us-east-1-2.ec2.redns.redis-cloud.com'
             - name: password_redis
-              value: "e5qUny4OV6WiMnOPWt4bRM9NmEmOYa91"
+              value: 'm0lxMKQLt21NqkeQy6EckxAZEFBYE9Es'
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "500m"
-            limits:
               memory: "512Mi"
               cpu: "1000m"
+            limits:
+              memory: "1024Mi"
+              cpu: "2000m"
           readinessProbe:
             exec:
               command: ["/bin/sh", "-c", "g++ --version"]

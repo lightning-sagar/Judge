@@ -7,6 +7,7 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import { connectredis } from "./redis/redis.js";
 import cors from "cors";
+import { error } from "console";
 
 const app = express();
 const allowedOrigins = [
@@ -39,11 +40,12 @@ const redis_server = await connectredis();
 async function compileCode(language, codePath, execPath) {
   if (language === "cpp") {
     return new Promise((resolve, reject) => {
+      console.log("checks: ",codePath,execPath,language)
       exec(
         `g++ "${codePath}" -o "${execPath}"`,
         { timeout: 10000 },
         (err, _, stderr) => {
-          if (err) return reject("C++ Compilation Error:\n" + stderr);
+          if (err) return reject("C++ Compilation Error:\n" + stderr || error.message);
           resolve();
         }
       );
