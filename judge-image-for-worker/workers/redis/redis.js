@@ -1,12 +1,12 @@
 import { createClient } from "redis";
-console.log(process.env.host_redis, "redis host");
+
 const connectredis = async () => {
   const client = createClient({
     username: "default",
     password: process.env.password_redis,
     socket: {
-      host: process.env.host_redis || "host.docker.internal",
-      port: 19417,
+      host: process.env.host_redis,
+      port: 10605,
     },
   });
 

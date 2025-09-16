@@ -16,7 +16,7 @@ const main = async () => {
     timeout: "2",
     sizeout: "64",
   });   
-  console.log(result);
+  console.log("this is ans ",result);
 };
 
 main();
@@ -53,7 +53,7 @@ function getPath(){
 function createTestcase() {
   const inputs = [];
   const outputs = [];
-  for (let i = 1; i <= 200; i++) {
+  for (let i = 1; i <= 15; i++) {
     const arr = Array.from({ length: i }, (_, idx) => idx + 1).join(" ");
     inputs.push(`${i} ${arr}`);
     const sum = (i * (i + 1)) / 2;

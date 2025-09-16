@@ -33,8 +33,8 @@ app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const WORKER_FIELD = "worker_0";
-const port = 5000;
+const WORKER_FIELD = process.env.WORKER_FIELD;
+const port = process.env.PORT;
 const redis_server = await connectredis();
 
 async function compileCode(language, codePath, execPath) {
@@ -145,9 +145,7 @@ function runTestcase(
 async function processJob(ques_name, code, language, testcases) {
   const extension =
     language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
-  // const fileName = `${ques_name}_${WORKER_FIELD}.${extension}`;
-  const fileName = `${ques_name}_${WORKER_FIELD}_${Date.now()}.${extension}`;
-
+  const fileName = `${ques_name}_${WORKER_FIELD}.${extension}`;
   const filePath = path.join(__dirname, fileName);
   const execPath =
     language === "java"
