@@ -15,13 +15,13 @@ const main = async () => {
     language: "cpp",
     timeout: "2",
     sizeout: "64",
-  });   
-  console.log("this is ans ",result);
+  });
+  console.log("this is ans ", result);
 };
 
 main();
 
-function getPath(){
+function getPath() {
   const code = `
   #include<iostream>
   #include<vector>
@@ -49,11 +49,11 @@ function getPath(){
   return tmpPath;
 }
 
-// creating ~200 test case 
+// creating ~200 test case
 function createTestcase() {
   const inputs = [];
   const outputs = [];
-  for (let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= 305; i++) {
     const arr = Array.from({ length: i }, (_, idx) => idx + 1).join(" ");
     inputs.push(`${i} ${arr}`);
     const sum = (i * (i + 1)) / 2;
@@ -63,5 +63,3 @@ function createTestcase() {
   const outputStr = outputs.join(" ### ");
   return { inputStr, outputStr };
 }
-
-
