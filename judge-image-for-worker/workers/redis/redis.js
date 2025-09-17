@@ -6,7 +6,7 @@ const connectredis = async () => {
     password: process.env.password_redis,
     socket: {
       host: process.env.host_redis,
-      port: 10605,
+      port:  process.env.redis_port,
     },
   });
 

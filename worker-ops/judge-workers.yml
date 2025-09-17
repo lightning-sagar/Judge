@@ -44,7 +44,28 @@ spec:
             initialDelaySeconds: 2
             periodSeconds: 5
             failureThreshold: 5
-        - name: 
+        - name: demo-example
+          image: lightningsagar/demo-example:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: host_redis
+              value: "redis-0.redis.judge-namespace.svc.cluster.local:6379"
+            - name: password_redis
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "2000m"
 ---
 apiVersion: v1
 kind: Secret
@@ -54,3 +75,5 @@ metadata:
 type: Opaque
 data:
   password: bTBseE1LUUx0MjFOcWtlUXk2RWNrWEFaRUZCWUU5RXM= # base64 of "m0lxMKQLt21NqkeQy6EckxAZEFBYE9Es"
+
+# k exec -it -n judge-namespace judge-workers-6fdf7db9d4-6kt8w -c demo-example -- /bin/sh
