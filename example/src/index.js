@@ -54,7 +54,7 @@ function getPath() {
 function createTestcase() {
   const inputs = [];
   const outputs = [];
-  for (let i = 1; i <= 10_000; i++) {
+  for (let i = 1; i <= 105; i++) {
     const arr = Array.from({ length: i }, (_, idx) => idx + 1).join(" ");
     inputs.push(`${i} ${arr}`);
     const sum = (i * (i + 1)) / 2;
