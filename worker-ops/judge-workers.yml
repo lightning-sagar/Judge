@@ -21,57 +21,36 @@ spec:
             - containerPort: 5000
           env:
             - name: PORT
-              value: '3000'
+              value: "3000"
             - name: host_redis
-              value: 'redis-10605.c81.us-east-1-2.ec2.redns.redis-cloud.com'
+              value: "redis-0.redis.judge-namespace.svc.cluster.local"
             - name: password_redis
-              value: 'm0lxMKQLt21NqkeQy6EckxAZEFBYE9Es'
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+
           resources:
             requests:
               memory: "512Mi"
-              cpu: "1000m"
+              cpu: "500m"
             limits:
               memory: "1024Mi"
               cpu: "2000m"
+
           readinessProbe:
             exec:
               command: ["/bin/sh", "-c", "g++ --version"]
             initialDelaySeconds: 2
             periodSeconds: 5
             failureThreshold: 5
-
+        - name: 
 ---
 apiVersion: v1
-kind: Service
+kind: Secret
 metadata:
-  name: cpu-service
+  name: redis-secret
   namespace: judge-namespace
-spec:
-  type: NodePort
-  selector:
-    app: judge-workers
-  ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
-      nodePort: 30000
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: judge-workers-hpa
-  namespace: judge-namespace
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: judge-workers
-  minReplicas: 3
-  maxReplicas: 8
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
+type: Opaque
+data:
+  password: bTBseE1LUUx0MjFOcWtlUXk2RWNrWEFaRUZCWUU5RXM= # base64 of "m0lxMKQLt21NqkeQy6EckxAZEFBYE9Es"

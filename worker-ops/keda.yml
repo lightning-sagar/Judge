@@ -1,0 +1,36 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: judge-workers-scaledobject
+  namespace: judge-namespace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: judge-workers
+
+  minReplicaCount: 1
+  maxReplicaCount: 8
+  pollingInterval: 5      # check every 10 seconds
+  cooldownPeriod: 30       # scale down after 30 seconds
+
+  triggers:
+    - type: redis
+      metadata:
+        address: "redis-0.redis.judge-namespace.svc.cluster.local:6379"
+        listName: "job_queue"
+        listLength: "3"
+        enableTLS: "false"
+      authenticationRef:
+        name: redis-trigger-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: redis-trigger-auth
+  namespace: judge-namespace
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: redis-secret
+      key: password
