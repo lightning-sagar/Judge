@@ -1,0 +1,206 @@
+# Simple PersistentVolume using HostPath
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: judge-shared-pv-simple
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /tmp/judge-shared
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "manual"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: Exists
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: judge-shared-pvc
+  namespace: judge-namespace
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: "manual"
+  selector:
+    matchLabels:
+      type: local
+---
+# Redis StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: judge-namespace
+spec:
+  serviceName: redis
+  replicas: 1   
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          command: ["redis-server", "--appendonly", "yes", "--bind", "0.0.0.0"]  
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# Redis Headless Service (keeping original name)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: judge-namespace
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  clusterIP: None
+  selector:
+    app: redis
+---
+# Redis ClusterIP Service (for easier access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: judge-namespace
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  selector:
+    app: redis
+  type: ClusterIP
+---
+# Judge Workers with improved configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge-workers
+  namespace: judge-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: judge-workers
+  template:
+    metadata:
+      labels:
+        app: judge-workers
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: Exists
+      containers:
+        - name: judge-worker
+          image: lightningsagar/worker:3e2eb3af30ea6f9e1dc712104ef05db321c70aab
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000 
+          env:
+            - name: PORT
+              value: "3000"
+            - name: redis_port
+              value: "6379"
+            - name: host_redis
+              value: "redis-service" 
+            - name: REDIS_HOST
+              value: "redis-service.judge-namespace.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: "redis-service.judge-namespace.svc.cluster.local:6379"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "2000m"
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+---
+# KEDA ScaledObject
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: judge-workers-scaledobject
+  namespace: judge-namespace
+spec:
+  scaleTargetRef:
+    name: judge-workers
+  minReplicaCount: 3
+  maxReplicaCount: 8
+  pollingInterval: 5
+  cooldownPeriod: 30
+  triggers:
+    - type: redis
+      metadata:
+        address: redis-service.judge-namespace.svc.cluster.local:6379
+        listName: job_queue
+        listLength: "3"
+        activationListLength: "1"
