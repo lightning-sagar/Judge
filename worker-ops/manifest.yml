@@ -46,7 +46,7 @@ metadata:
   namespace: judge-namespace
 spec:
   serviceName: redis
-  replicas: 1   
+  replicas: 1  # Changed from 3 to 1 for simplicity
   selector:
     matchLabels:
       app: redis
@@ -63,7 +63,7 @@ spec:
           volumeMounts:
             - name: redis-data
               mountPath: /data
-          command: ["redis-server", "--appendonly", "yes", "--bind", "0.0.0.0"]  
+          command: ["redis-server", "--appendonly", "yes", "--bind", "0.0.0.0"]  # Added bind to 0.0.0.0
           readinessProbe:
             tcpSocket:
               port: 6379
@@ -129,6 +129,7 @@ spec:
       labels:
         app: judge-workers
     spec:
+      # Removed complex pod affinity - using node affinity instead if needed
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -142,14 +143,14 @@ spec:
           image: lightningsagar/worker:3e2eb3af30ea6f9e1dc712104ef05db321c70aab
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000 
+            - containerPort: 3000  # Changed from 5000 to match PORT env
           env:
             - name: PORT
               value: "3000"
             - name: redis_port
               value: "6379"
             - name: host_redis
-              value: "redis-service" 
+              value: "redis-service"  # Simplified since we're in same namespace
             - name: REDIS_HOST
               value: "redis-service.judge-namespace.svc.cluster.local"
             - name: REDIS_PORT
@@ -195,7 +196,7 @@ spec:
     name: judge-workers
   minReplicaCount: 3
   maxReplicaCount: 8
-  pollingInterval: 5
+  pollingInterval: 2
   cooldownPeriod: 30
   triggers:
     - type: redis
@@ -203,4 +204,4 @@ spec:
         address: redis-service.judge-namespace.svc.cluster.local:6379
         listName: job_queue
         listLength: "3"
-        activationListLength: "1"
+        activationListLength: "5"

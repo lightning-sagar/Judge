@@ -189,3 +189,6 @@ Docker Image: `lightningsagar/worker:4`
 
 ---
 
+```
+kubectl get hpa -n judge-namespace
+kubectl port-forward -n judge-namespace redis-0 6379:6379

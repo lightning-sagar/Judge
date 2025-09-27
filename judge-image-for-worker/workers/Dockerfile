@@ -10,7 +10,8 @@ RUN apk update && apk add --no-cache \
     py3-pip \
     bash \
     libstdc++ \
-    musl-dev
+    musl-dev \
+    redis
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"

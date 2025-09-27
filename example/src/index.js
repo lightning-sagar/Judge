@@ -50,17 +50,21 @@ function getPath() {
   return tmpPath;
 }
 
-// creating ~200 test case
+// creating 10000 test cases, each with 10 inputs
 function createTestcase() {
   const inputs = [];
   const outputs = [];
-  for (let i = 1; i <= 105; i++) {
-    const arr = Array.from({ length: i }, (_, idx) => idx + 1).join(" ");
-    inputs.push(`${i} ${arr}`);
-    const sum = (i * (i + 1)) / 2;
+
+  for (let i = 0; i < 10_000; i++) {
+    // create 10 numbers for this test case
+    const arr = Array.from({ length: 10 }, (_, idx) => idx + 1).join(" ");
+    inputs.push(`10 ${arr}`);  // first number is n=10
+    const sum = (10 * (10 + 1)) / 2; // sum of 1..10 = 55
     outputs.push(sum.toString());
   }
+
   const inputStr = inputs.join(" ### ");
   const outputStr = outputs.join(" ### ");
   return { inputStr, outputStr };
 }
+
