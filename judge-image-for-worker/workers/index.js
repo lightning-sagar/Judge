@@ -223,7 +223,8 @@ async function pollForJobs() {
       const language = await redis_server.hGet(ques_name, "language");
 
       // Get next batch of test cases
-      const batchData = await redis_server.lPop(`testcase_queue:${ques_name}`);
+      const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
+
       if (!batchData) {
         console.warn(`[Worker] No batch found for ${ques_name}`);
         continue;
@@ -258,3 +259,4 @@ app.get("/ping", (req, res) => {
 app.listen(port, () => {
   console.log(`running at port ${port}`);
 });
+
