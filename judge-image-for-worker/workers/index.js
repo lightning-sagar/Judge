@@ -180,7 +180,7 @@ async function processJob(ques_name, code, language, testcases) {
     await redis_server.hSet(`job:${ques_name}:status`, {
       state: "completed",
     });
-    await redis_server.expire(`job:${ques_name}:status`, 30);
+    await redis_server.expire(`job:${ques_name}:status`, 300);
   } catch (err) {
     console.error("Error during job processing:", err);
     await redis_server.setEx(
