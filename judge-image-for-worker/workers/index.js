@@ -174,7 +174,7 @@ async function processJob(ques_name, code, language, testcases) {
     // Store job result
     await redis_server.setEx(
       `job:${ques_name}:result`,
-      30,
+      300,
       JSON.stringify(results)
     );
     await redis_server.hSet(`job:${ques_name}:status`, {
