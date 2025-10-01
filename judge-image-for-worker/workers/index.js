@@ -214,7 +214,8 @@ async function pollForJobs() {
         continue;
       }
 
-      const ques_name = result.element;
+      const batchName = result.element;   
+      const ques_name = batchName.split("_batch_")[0]; 
       console.log(`[Worker] Got job: ${ques_name}`);
 
       // Fetch code & language (from Redis Hash or DB)
