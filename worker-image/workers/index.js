@@ -3,7 +3,6 @@ import fs from "fs";
 import path from "path";
 import { exec, spawn } from "child_process";
 import { fileURLToPath } from "url";
-import fetch from "node-fetch";
 import "dotenv/config";
 import { connectredis } from "./redis/redis.js";
 import cors from "cors";

@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import "dotenv/config";
 import { connectredis } from "./redis/redis.js";
 import cors from "cors";
+import { error } from "console";
 
 const app = express();
 const allowedOrigins = [
@@ -169,6 +170,7 @@ async function processJob(ques_name, code, language, testcases) {
       )
     );
     console.log(results, "this is results");
+    // Store job result
     await redis_server.setEx(
       `job:${ques_name}:result`,
       300,
@@ -203,6 +205,7 @@ async function processJob(ques_name, code, language, testcases) {
 async function pollForJobs() {
   while (true) {
     try {
+      // Fetch a job name
       const result = await redis_server.brPop("job_queue", 0);
 
       if (!result) {
@@ -214,17 +217,24 @@ async function pollForJobs() {
       const ques_name = batchName.split("_batch_")[0]; 
       console.log(`[Worker] Got job: ${ques_name}`);
 
+      // Fetch code & language (from Redis Hash or DB)
       const code = await redis_server.hGet(ques_name, "code");
       const language = await redis_server.hGet(ques_name, "language");
+
+      // Get next batch of test cases
       const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
 
       if (!batchData) {
         console.warn(`[Worker] No batch found for ${ques_name}`);
         continue;
       }
+
       const testcases = JSON.parse(batchData);
+
+      // Process the job
       await processJob(ques_name, code, language, testcases);
 
+      // Update status
       await redis_server.hIncrBy(
         `job:${ques_name}:status`,
         "completedBatches",
