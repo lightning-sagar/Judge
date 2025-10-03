@@ -57,7 +57,7 @@ The `judge-workers` interact with Redis to process tasks efficiently. The system
 **Explanation:**
 
 * **minReplicas:** Minimum of 3 pods running at all times.
-* **maxReplicas:** Can scale up to 12 pods if CPU demand increases.
+* **maxReplicas:** Can scale up to 8 pods if CPU demand increases.
 * **averageUtilization:** Each pod tries to maintain 70% CPU utilization.
 
 ---
@@ -177,6 +177,7 @@ kubectl delete -f judge-workers.yaml
 ## **Future Improvements**
 
 * Add logging and monitoring with **Prometheus & Grafana**.
+* Trying to add **KEDA** <-- facing problem!
 * Use **ConfigMaps** or **Secrets** for Redis credentials.
 * Implement rolling updates for zero downtime.
 
@@ -185,7 +186,7 @@ kubectl delete -f judge-workers.yaml
 ## **Author**
 
 **Lightning Sagar**
-Docker Image: `lightningsagar/worker:4`
+Docker Image: `lightningsagar/worker:latest`
 
 ---
 
