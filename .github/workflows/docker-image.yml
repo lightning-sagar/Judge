@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - 'judge-image-for-worker/**'
+      - 'worker-image/**'
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -24,8 +24,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ./judge-image-for-worker/workers
-          file: ./judge-image-for-worker/workers/Dockerfile
+          context: ./worker-image/workers
+          file: ./worker-image/workers/Dockerfile
           push: true
           tags: lightningsagar/worker:${{ github.sha }}
 
