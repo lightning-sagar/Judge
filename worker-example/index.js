@@ -3,7 +3,6 @@ import fs from "fs";
 import path from "path";
 import { exec, spawn } from "child_process";
 import { fileURLToPath } from "url";
-import fetch from "node-fetch";
 import "dotenv/config";
 import { connectredis } from "./redis/redis.js";
 import cors from "cors";
@@ -33,18 +32,18 @@ app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const WORKER_FIELD = process.env.WORKER_FIELD;
 const port = process.env.PORT;
 const redis_server = await connectredis();
 
 async function compileCode(language, codePath, execPath) {
   if (language === "cpp") {
     return new Promise((resolve, reject) => {
+      console.log("checks: ",codePath,execPath,language)
       exec(
         `g++ "${codePath}" -o "${execPath}"`,
         { timeout: 10000 },
         (err, _, stderr) => {
-          if (err) return reject("C++ Compilation Error:\n" + stderr);
+          if (err) return reject("C++ Compilation Error:\n" + stderr || error.message);
           resolve();
         }
       );
@@ -145,7 +144,7 @@ function runTestcase(
 async function processJob(ques_name, code, language, testcases) {
   const extension =
     language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
-  const fileName = `${ques_name}_${WORKER_FIELD}.${extension}`;
+  const fileName = `${ques_name}.${extension}`;
   const filePath = path.join(__dirname, fileName);
   const execPath =
     language === "java"
@@ -171,23 +170,23 @@ async function processJob(ques_name, code, language, testcases) {
     );
     console.log(results, "this is results");
     await redis_server.setEx(
-      `job:${ques_name}:worker:${WORKER_FIELD}`,
-      30,
+      `job:${ques_name}:result`,
+      300,
       JSON.stringify(results)
     );
     await redis_server.hSet(`job:${ques_name}:status`, {
-      [WORKER_FIELD]: "completed",
+      state: "completed",
     });
-    await redis_server.expire(`job:${ques_name}:status`, 30);
+    await redis_server.expire(`job:${ques_name}:status`, 300);
   } catch (err) {
     console.error("Error during job processing:", err);
     await redis_server.setEx(
-      `job:${ques_name}:worker:${WORKER_FIELD}`,
+      `job:${ques_name}:result`,
       30,
       JSON.stringify([{ error: err.toString() }])
     );
     await redis_server.hSet(`job:${ques_name}:status`, {
-      [WORKER_FIELD]: "completed",
+      state: "failed",
     });
   } finally {
     try {
@@ -204,17 +203,38 @@ async function processJob(ques_name, code, language, testcases) {
 async function pollForJobs() {
   while (true) {
     try {
-      const { element: ques_name } = await redis_server.brPop("job_queue", 0);
-      console.log(`Got job: ${ques_name}`);
+      const result = await redis_server.brPop("job_queue", 0);
+
+      if (!result) {
+        console.warn("[Worker] BRPOP returned empty");
+        continue;
+      }
+
+      const batchName = result.element;   
+      const ques_name = batchName.split("_batch_")[0]; 
+      console.log(`[Worker] Got job: ${ques_name}`);
 
       const code = await redis_server.hGet(ques_name, "code");
       const language = await redis_server.hGet(ques_name, "language");
-      const data_testcases = await redis_server.hGet(ques_name, WORKER_FIELD);
-      if (!data_testcases) continue;
-      const testcases = JSON.parse(data_testcases);
+      const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
+
+      if (!batchData) {
+        console.warn(`[Worker] No batch found for ${ques_name}`);
+        continue;
+      }
+      const testcases = JSON.parse(batchData);
       await processJob(ques_name, code, language, testcases);
+
+      await redis_server.hIncrBy(
+        `job:${ques_name}:status`,
+        "completedBatches",
+        1
+      );
+      console.log(
+        `[Worker] Completed one batch of ${testcases.length} for ${ques_name}`
+      );
     } catch (err) {
-      console.error("Error while polling job:", err);
+      console.error("[Worker] Error while polling job:", err);
     }
   }
 }
@@ -226,5 +246,5 @@ app.get("/ping", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`${WORKER_FIELD} running at port ${port}`);
+  console.log(`running at port ${port}`);
 });
