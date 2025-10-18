@@ -94,3 +94,17 @@ Built with ❤️ to support developers, students, and educators in building bet
 
 ---
 
+
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+
+
+kubectl port-forward -n judge-namespace redis-0 6379:6379
+
+
+for installing choco -
+https://chocolatey.org/install
+
+then install choco install kubernetes-cli

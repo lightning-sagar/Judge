@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Cloud, Play, Download, Terminal, GitBranch, CheckCircle, Copy } from "lucide-react"
+import { Cloud, Play, Download, Terminal, GitBranch, CheckCircle, Copy, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { FloatingNav } from "@/components/ui/floating-navbar"
 
@@ -91,8 +91,105 @@ export default function SelfHostPage() {
         </div>
       </section>
 
-      {/* Get Started Section */}
+      {/* Prerequisite Requirements Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Prerequisite Requirements</h2>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-blue-500" />
+                Before You Begin
+              </CardTitle>
+              <CardDescription>Ensure you have the necessary tools installed on your system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-10">
+                {/* Step 1 */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      1
+                    </div>
+                    <h4 className="font-semibold text-gray-900">Chocolatey Package Manager</h4>
+                  </div>
+                  <p className="text-gray-600">
+                    Chocolatey is a package manager for Windows that simplifies the installation of software and
+                    dependencies. It is required for managing packages in your self-hosted environment.
+                  </p>
+                  <Link href="https://chocolatey.org/install" target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+                      <Download className="w-4 h-4 mr-2" />
+                      Install Chocolatey
+                    </Button>
+                  </Link>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-4">
+                    <div className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                      <p className="text-sm text-blue-800">
+                        <strong>Note:</strong> Follow the official Chocolatey installation guide to ensure proper setup.
+                        You may need administrator privileges to install Chocolatey on your system.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      2
+                    </div>
+                    <h4 className="font-semibold text-gray-900">Install Kubernetes CLI (kubectl)</h4>
+                  </div>
+                  <p className="text-gray-600">
+                    The Kubernetes CLI (kubectl) is required to interact with your Kubernetes cluster. You can install it using Chocolatey after the package manager is set up.
+                  </p>
+                  <div className="bg-gray-100 border border-gray-300 rounded-md p-3 text-sm font-mono text-gray-800">
+                    choco install kubernetes-cli
+                  </div>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-2">
+                    <div className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                      <p className="text-sm text-blue-800">
+                        <strong>Tip:</strong> After installation, verify by running <code>kubectl version --client</code> in your terminal.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      3
+                    </div>
+                    <h4 className="font-semibold text-gray-900">Install Kind (Kubernetes IN Docker)</h4>
+                  </div>
+                  <p className="text-gray-600">
+                    Kind is a tool for running local Kubernetes clusters using Docker containers as nodes. It’s especially useful for testing and CI environments.
+                    You can install it using Chocolatey after setting up the package manager.
+                  </p>
+                  <div className="bg-gray-100 border border-gray-300 rounded-md p-3 text-sm font-mono text-gray-800">
+                    choco install kind
+                  </div>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-2">
+                    <div className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                      <p className="text-sm text-blue-800">
+                        <strong>Tip:</strong> After installation, verify Kind is installed by running <code>kind version</code> in your terminal.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section >
+      {/* Get Started Section */}
+      < section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50" >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Get Started</h2>
 
@@ -150,47 +247,25 @@ export default function SelfHostPage() {
                     </div>
                     <div>
                       <span className="text-blue-400">host_redis</span>=
-                      <span className="text-green-400">your_redis_host</span>
+                      <span className="text-green-400">
+                        your_redis_host ## like - redis-service.judge-namespace.svc.cluster.local
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-blue-400">redis_port</span>=
+                      <span className="text-green-400">your_redis_host ## like - 6379</span>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Step 3: Pull and Run Worker */}
+            {/* Step 3: Clone Ops Repository */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     3
-                  </div>
-                  <CardTitle>Deploy Worker Container</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Pull the worker image and run it with your Redis configuration:</p>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-400"># Pull the worker image</span>
-                      <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <code>
-                      docker pull lightningsagar/worker:df81ba839e3360df517be6b5a11029dea03c391d
-                    </code>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Step 4: Clone Ops Repository */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    4
                   </div>
                   <CardTitle>Setup Kubernetes Operations</CardTitle>
                 </div>
@@ -224,10 +299,10 @@ export default function SelfHostPage() {
             </Card>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Run Operations Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      < section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50" >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Deploy to Kubernetes</h2>
 
@@ -241,6 +316,31 @@ export default function SelfHostPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <div>
+                  <p className="text-gray-600 mb-3">Create Cluster:</p>
+                  <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400"># Creating Cluster</span>
+                      <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <code>kind create cluster --config .\cluster.yml -n workers-clusters</code>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-gray-600 mb-3">Create namespace:</p>
+                  <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400"># Creating namespace</span>
+                      <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <code>kubectl create namespace judge-namespace</code>
+                  </div>
+                </div>
                 <div>
                   <p className="text-gray-600 mb-3">Apply the deployment configuration:</p>
                   <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
@@ -283,10 +383,10 @@ export default function SelfHostPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section >
 
       {/* Usage Documentation Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      < section className="py-16 px-4 sm:px-6 lg:px-8" >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Using lib-judge in Your Code</h2>
 
@@ -361,10 +461,10 @@ export default function SelfHostPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section >
 
       {/* Benefits Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      < section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50" >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Why Self-Host?</h2>
 
@@ -420,10 +520,10 @@ export default function SelfHostPage() {
             </Card>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      < footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8" >
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
@@ -502,7 +602,7 @@ export default function SelfHostPage() {
             <p>&copy; {new Date().getFullYear()} JudgeLib. All rights reserved.</p>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   )
 }
