@@ -267,6 +267,34 @@ export default function SelfHostPage() {
                   <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     3
                   </div>
+                  <CardTitle>Deploy Worker Container</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Pull the worker image and run it with your Redis configuration:</p>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-white p-4 rounded-lg font-mono text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400"># Pull the worker image</span>
+                      <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <code>
+                      docker pull lightningsagar/worker:e78c86a716f441816d766f08459ab86ae32f9717
+                    </code>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 4: Clone Ops Repository */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    4
+                  </div>
                   <CardTitle>Setup Kubernetes Operations</CardTitle>
                 </div>
               </CardHeader>
