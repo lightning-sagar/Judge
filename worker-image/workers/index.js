@@ -206,7 +206,7 @@ async function pollForJobs() {
   while (true) {
     try {
       // Fetch a job name
-      const result = await redis_server.brPop("job_queue", 0);
+      const result = await redis_server.brPop("job_queue", 30);
 
       if (!result) {
         console.warn("[Worker] BRPOP returned empty");

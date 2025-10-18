@@ -205,4 +205,4 @@ spec:
         address: redis-service.judge-namespace.svc.cluster.local:6379
         listName: job_queue
         listLength: "3"
-        activationListLength: "5"
+        cooldownPeriod: "30"
