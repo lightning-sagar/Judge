@@ -1,14 +1,15 @@
+"use client"
 import { FloatingNav } from "@/components/ui/floating-navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Terminal, Server, Zap, Shield, Users, ExternalLink, AlertTriangle } from "lucide-react"
-import Link from "next/link"
+import { Terminal, Server, Zap, Shield, Users, AlertTriangle } from "lucide-react"
 import { PingWorker } from "@/components/ui/ping-worker"
+import Footer from "@/components/footer"
 
 export default function MicroservicePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <FloatingNav />
 
       {/* Hero Section */}
@@ -22,24 +23,19 @@ export default function MicroservicePage() {
               Microservice Setup
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed">
-              Deploy JudgeLib as a standalone microservice with REST API endpoints for maximum scalability and
-              flexibility.
+              Deploy JudgeLib as a standalone microservice with REST API endpoints.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               <Button
                 size="lg"
                 className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-3 w-full sm:w-auto"
+                onClick={() => {
+                  const el = document.getElementById("api-documentation")
+                  el?.scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 <Terminal className="w-4 h-4 mr-2" />
                 Quick Start
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-orange-500 text-orange-500 hover:bg-orange-50 px-6 sm:px-8 py-3 w-full sm:w-auto"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                API Reference
               </Button>
               <div className="w-full sm:w-auto">
                 <PingWorker />
@@ -110,7 +106,7 @@ export default function MicroservicePage() {
                   <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto">
                     <pre className="text-green-400 text-xs sm:text-sm whitespace-pre-wrap break-words">
                       {`curl -X POST https://judge-microser.onrender.com/api/c/run \\
-  -F "code=./code.cpp" \\
+  -F "codePath=./code.cpp" \\
   -F "ques_name=sum of number" \\
   -F "timeout=2" \\
   -F "sizeout=1" \\
@@ -165,7 +161,7 @@ export default function MicroservicePage() {
       </section>
 
       {/* API Documentation */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section id="api-documentation" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">API Documentation</h2>
 
@@ -194,12 +190,12 @@ export default function MicroservicePage() {
                   <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto">
                     <pre className="text-blue-400 text-xs sm:text-sm whitespace-pre-wrap break-words">
                       {`{
-  "ques_name":"dummy",      // required
-  "language": "python",     // required: programming language
-  "code": ./code.py,        // required: path of source code
-  "output": "dummy_output"  // required: output for the program (cannot be empty) seperated by ###
-  "input": "dummy_input",   // required: input for the program  (cannot be empty) seperated by ###
-  "timeout": 5,             // optional: timeout in seconds
+  "ques_name":"dummy",          // required: should be unique for each job
+  "language": "python",         // required: programming language
+  "codePath": ./code.py,        // required: path of source code
+  "output": "dummy_output"      // required: output for the program (cannot be empty) seperated by ###
+  "input": "dummy_input",       // required: input for the program  (cannot be empty) seperated by ###
+  "timeout": 2,                 // optional: timeout in seconds
   "sizeout":2
 }`}
                     </pre>
@@ -222,7 +218,7 @@ export default function MicroservicePage() {
                   <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto">
                     <pre className="text-green-400 text-xs sm:text-sm whitespace-pre-wrap break-words">
                       {`curl -X POST https://judge-microser.onrender.com/api/c/run \\
-  -F "code=@code.cpp" \\
+  -F "codePath=@code.cpp" \\
   -F "ques_name=sum of number" \\
   -F "timeout=2" \\
   -F "sizeout=1" \\
@@ -265,83 +261,7 @@ console.log(result);`}
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <h3 className="text-lg font-semibold mb-4">
-                Judge<span className="text-orange-500">Lib</span>
-              </h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                The most reliable code execution engine for developers.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/microservice" className="hover:text-orange-500 transition-colors">
-                    Microservice
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/npm" className="hover:text-orange-500 transition-colors">
-                    NPM Library
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Developers</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    API Reference
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    SDKs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Examples
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Community
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    GitHub
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} JudgeLib. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

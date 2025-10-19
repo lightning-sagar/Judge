@@ -8,8 +8,8 @@ import { Menu, X } from "lucide-react"
 
 const navItems = [
   { name: "Home", link: "/" },
-  { name: "NPM Library", link: "/npm" },
   { name: "Self-Host", link: "/selfhost", isNew: true },
+  { name: "NPM Library", link: "/npm" },
   { name: "Microservice", link: "/microservice" },
   { name: "Docs", link: "/docs" },
 ]
@@ -81,7 +81,7 @@ export const FloatingNav = ({ className }: { className?: string }) => {
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-gradient-to-r from-blue-500 to-blue-500 text-white rounded-full shadow-sm"
+                    className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-sm"
                   >
                     NEW
                   </motion.span>
@@ -90,7 +90,7 @@ export const FloatingNav = ({ className }: { className?: string }) => {
                   <motion.div
                     layoutId="navbar-indicator"
                     className={
-                      "absolute inset-0 rounded-full -z-10 " + (navItem.isNew ? "bg-blue-100" : "bg-orange-100")
+                      "absolute inset-0 rounded-full -z-10 bg-orange-100"
                     }
 
                     transition={{

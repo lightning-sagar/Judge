@@ -3,13 +3,13 @@ import { FloatingNav } from "@/components/ui/floating-navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Package, Download, Zap, Shield, ExternalLink, CheckCircle, Users } from "lucide-react"
-import Link from "next/link"
+import { Package, Download, Zap, Shield, Server, CheckCircle, Cpu } from "lucide-react"
 import { PingWorker } from "@/components/ui/ping-worker"
+import Footer from "@/components/footer"
 
 export default function NPMPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <FloatingNav />
 
       {/* Hero Section */}
@@ -19,9 +19,10 @@ export default function NPMPage() {
             <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Package className="w-10 h-10 text-orange-500" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">NPM Library</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Judge<span className="text-orange-600">Lib</span> NPM Library</h1>
             <p className="text-xl text-gray-600 mb-8">
-              Install JudgeLib directly into your Node.js application for seamless code execution capabilities.
+              A distributed code-execution library that divides test cases into batches, stores them in Redis,
+              and executes them efficiently using background workers.
             </p>
             <div className="bg-gray-900 rounded-lg p-4 text-green-400 font-mono text-lg mb-8 max-w-md mx-auto">
               npm install lib-judge
@@ -44,7 +45,7 @@ export default function NPMPage() {
                 className="border-orange-500 text-orange-500 hover:bg-orange-50 px-8 py-3"
                 onClick={() => window.open("https://www.npmjs.com/package/lib-judge", "_blank")}
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
+                <Server className="w-4 h-4 mr-2" />
                 View on NPM
               </Button>
               <PingWorker />
@@ -56,33 +57,33 @@ export default function NPMPage() {
       {/* Benefits Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Why Choose NPM Library?</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Why Use JudgeLib?</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-8 h-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Zero Configuration</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Batch Processing</h3>
               <p className="text-gray-600">
-                Install and start executing code immediately with sensible defaults and automatic setup.
+                JudgeLib divides large sets of test cases into smaller, manageable batches for faster and more efficient execution.
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-orange-500" />
+                <Cpu className="w-8 h-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Horizontal Scaling</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Redis Integration</h3>
               <p className="text-gray-600">
-                Scale your code execution capacity by deploying multiple instances behind a load balancer.
+                Test cases and execution data are stored and managed in Redis for fast retrieval and distributed coordination.
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Local Execution</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Worker System</h3>
               <p className="text-gray-600">
-                Execute code locally within your application without external dependencies or network calls.
+                Background workers fetch batched test cases from Redis and execute them in isolated environments for maximum reliability.
               </p>
             </div>
           </div>
@@ -92,7 +93,7 @@ export default function NPMPage() {
       {/* Installation Guide */}
       <section id="installation" className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Installation Guide</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Installation & Setup</h2>
 
           <div className="space-y-8">
             {/* Step 1 */}
@@ -102,7 +103,7 @@ export default function NPMPage() {
                   <Badge className="bg-orange-500 text-white">1</Badge>
                   Install Package
                 </CardTitle>
-                <CardDescription>Add lib-judge to your Node.js project</CardDescription>
+                <CardDescription>Add JudgeLib to your Node.js project</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -125,56 +126,35 @@ export default function NPMPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Badge className="bg-orange-500 text-white">2</Badge>
-                  Basic Usage
+                  How It Works
                 </CardTitle>
-                <CardDescription>Start executing code in your application</CardDescription>
+                <CardDescription>JudgeLib automatically batches and processes your test cases</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">JavaScript (ES Modules)</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Example Usage</h4>
                   <div className="bg-gray-900 rounded-lg p-4 text-sm overflow-x-auto">
                     <pre className="text-blue-400">
-                      {`import fs from 'fs';
-import path from 'path';
-import { judge } from 'lib-judge';
+                      {`import { judge } from 'lib-judge';
 
-// Assuming code is a string of C++ source code
-const code = \`
-#include<iostream>
-#include<vector>
-using namespace std;
-int main(){
-    int n;
-    cin>>n;
-    vector<int> v(n);
-    for(int i = 0;i<n;i++){
-        cin>>v[i];
-    }
-    int c = 0;
-    for(auto it:v){
-        c+=it;
-    }
-    cout<<c;
-    return 0;
-}\`;
+// Sample testcases input
+const input = '5 1 2 3 4 5 ### 3 10 20 30 ### 4 2 2 2 2';
+const output = '15 ### 60 ### 8';
 
-// Save to a temporary file
-const tmpDir = './tmp';
-if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-const tmpPath = path.join(tmpDir, \`code_\${Date.now()}.cpp\`);
-fs.writeFileSync(tmpPath, code, 'utf-8');
-
-// Call judge with the correct file path
 const result = await judge({
-  codePath: tmpPath,//path of the file
+  codePath: tmpPath, //path of the file
   ques_name: 'sum of array',
-  input: '5 1 2 3 4 5 ### 3 1 2 3 ### 2 1 2',
-  output: '15 ### 6 ### 3',
-  language:'cpp',
+  input,
+  output,
+  language: 'cpp',
   timeout: '2',
-  sizeout: '64',
+  sizeout: '64'
 });
 
+// Internally:
+// 1️⃣ Input is divided into batches
+// 2️⃣ Stored in Redis
+// 3️⃣ Workers pull batches and execute them asynchronously
 console.log(result);`}
                     </pre>
                   </div>
@@ -187,10 +167,10 @@ console.log(result);`}
 
       {/* Supported Languages */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Supported Languages</h2>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               { name: "Python", version: "3.11", extension: ".py" },
               { name: "Java", version: "17", extension: ".java" },
@@ -218,81 +198,7 @@ console.log(result);`}
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                Judge<span className="text-orange-500">Lib</span>
-              </h3>
-              <p className="text-gray-400 text-sm">The most reliable code execution engine for developers.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/microservice" className="hover:text-orange-500 transition-colors">
-                    Microservice
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/npm" className="hover:text-orange-500 transition-colors">
-                    NPM Library
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Developers</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    API Reference
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    SDKs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Examples
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Community
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    GitHub
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} JudgeLib. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

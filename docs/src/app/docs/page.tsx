@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Code, Terminal, Package, Cloud } from "lucide-react"
+import { BookOpen, Terminal, Package, Cloud, Lightbulb, Award, LightbulbIcon } from "lucide-react"
 import Link from "next/link"
 import { FloatingNav } from "@/components/ui/floating-navbar"
+import Footer from "@/components/footer"
 
 export default function DocsPage() {
   return (
@@ -15,181 +16,235 @@ export default function DocsPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center">
             <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <BookOpen className="w-10 h-10 text-orange-500" />
+              <BookOpen className="w-10 h-10 text-orange-600" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Documentation</h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Complete guides and API references for integrating JudgeLib into your applications.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="#getting-started">
-                <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3">
-                  <Code className="w-4 h-4 mr-2" />
-                  Getting Started
-                </Button>
-              </Link>
-              <Link href="#api-reference">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-orange-500 text-orange-500 hover:bg-orange-50 px-8 py-3 bg-transparent"
-                >
-                  <Terminal className="w-4 h-4 mr-2" />
-                  API Reference
-                </Button>
-              </Link>
-            </div>
+            <h1 className="text-4xl md:text-5xl font-bold  mb-6">Judge<span className="text-orange-600">Lib</span> Documentation</h1>
+            <p className="text-xl text-gray-600 mb-8">Simple guides to get JudgeLib running in your application.</p>
           </div>
         </div>
       </section>
 
-      {/* Quick Navigation */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      {/* How It Works */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">Quick Navigation</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/microservice">
-              <Card className="hover:border-orange-200 transition-colors cursor-pointer">
-                <CardHeader className="text-center">
-                  <Terminal className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                  <CardTitle>Microservice Guide</CardTitle>
-                  <CardDescription>Deploy as a standalone service</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
+          <h2 className="text-3xl font-bold text-center text-orange-600 mb-4">How JudgeLib Works</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+            JudgeLib processes code submissions through a simple pipeline: your code gets split into test cases, queued
+            in Redis, and executed by workers.
+          </p>
 
-            <Link href="/npm">
-              <Card className="hover:border-orange-200 transition-colors cursor-pointer">
-                <CardHeader className="text-center">
-                  <Package className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                  <CardTitle>NPM Library Guide</CardTitle>
-                  <CardDescription>Install directly in Node.js</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link href="/selfhost">
-              <Card className="hover:border-orange-200 transition-colors cursor-pointer">
-                <CardHeader className="text-center">
-                  <Cloud className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                  <CardTitle>Self-Host Guide</CardTitle>
-                  <CardDescription>Docker + Kubernetes deployment</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          </div>
-
-          {/* Recommendation Banner */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <Cloud className="h-6 w-6 text-blue-500" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-blue-900">Recommended: Self-Host Deployment</h3>
-                <p className="mt-2 text-sm text-blue-700">
-                  For production use, we recommend self-hosting JudgeLib using our Docker image and Kubernetes
-                  configurations. This approach provides better reliability, performance, and cost-effectiveness
-                  compared to our free Render-based microservice.
-                </p>
-                <div className="mt-4">
-                  <Link href="/selfhost">
-                    <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                      <Cloud className="w-4 h-4 mr-2" />
-                      View Self-Host Guide
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Getting Started */}
-      <section id="getting-started" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Getting Started</h2>
-          <div className="space-y-8">
-            <Card>
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* NPM Library Card */}
+            <Card className="border-2 border-blue-200 bg-blue-50 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>What is JudgeLib?</CardTitle>
-              </CardHeader>
-              <CardContent className="prose max-w-none">
-                <p className="text-gray-600 mb-4">
-                  JudgeLib is a lightweight code execution engine built with Node.js and the `child_process` module. It
-                  enables you to execute user-submitted code in a controlled environment for educational, testing, or
-                  evaluation purposes.
-                </p>
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-yellow-700">
-                        <strong>Note:</strong> While it isolates processes, it{" "}
-                        <strong>does not run inside a secure container if you are using MicroServices</strong> (like Docker). For production-grade
-                        isolation, containerization is recommended. So, <strong>I would recommend using the self-hosted version</strong>, we provide the Docker image and Kubernetes configurations for that.
-                      </p>
-                    </div>
-                  </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <Package className="w-6 h-6 text-blue-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Key Features:</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Execute code in multiple languages (like Python, C++, Java)</li>
-                  <li>Customizable timeouts and memory limits</li>
-                  <li>Queue-based execution support (optional via Redis)</li>
-                  <li>Real-time output streaming</li>
-                  <li>Supports both NPM module usage and HTTP-based microservice mode</li>
+                <CardTitle className="text-xl text-blue-900">1. NPM Library</CardTitle>
+                <Badge className="w-fit bg-blue-600 text-white hover:bg-blue-600 mt-2">Required</Badge>
+              </CardHeader>
+              <CardContent>
+                <p className="text-blue-900 mb-4 font-medium">
+                  Install this library in your app to submit code for evaluation.
+                </p>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start">
+                    <Lightbulb className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Splits code into test cases</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Lightbulb className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Sends to Redis queue</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Lightbulb className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Gets results back</span>
+                  </li>
                 </ul>
               </CardContent>
             </Card>
-            {/* Supported Languages */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8">
-              <div className="max-w-4xl mx-auto">
-                <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Supported Languages</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {["Python", "C++", "Java"].map((language) => (
-                    <div
-                      key={language}
-                      className="text-center p-4 border rounded-lg hover:border-orange-200 transition-colors"
-                    >
-                      <Badge variant="secondary" className="w-full">
-                        {language}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-            <Card>
+
+            {/* Microservice Card */}
+            <Card className="border border-gray-200 bg-white hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle>Deployment Options</CardTitle>
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                  <Terminal className="w-6 h-6 text-gray-600" />
+                </div>
+                <CardTitle className="text-xl">2a. Free Microservice</CardTitle>
+                <Badge variant="secondary" className="w-fit mt-2">
+                  Cloud Hosted
+                </Badge>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <Package className="w-6 h-6 text-orange-500 mb-2" />
-                    <h4 className="font-semibold mb-2">NPM Library</h4>
-                    <p className="text-sm text-gray-600">Direct integration in your Node.js application</p>
+                <p className="text-gray-700 mb-4">Use our free hosted service on Render.</p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-gray-400 mr-2">•</span>
+                    <span>3 worker instances</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-400 mr-2">•</span>
+                    <span>Slow cold starts</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-400 mr-2">•</span>
+                    <span>Good for testing</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Self-Host Card - Highlighted */}
+            <Card className="border-2 border-orange-400 bg-orange-50 shadow-lg hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center mb-4">
+                  <Cloud className="w-6 h-6 text-orange-600" />
+                </div>
+                <CardTitle className="text-xl text-orange-900">2b. Self-Host</CardTitle>
+                <Badge className="w-fit bg-orange-600 text-white hover:bg-orange-600 mt-2">Recommended</Badge>
+              </CardHeader>
+              <CardContent>
+                <p className="text-orange-900 mb-4 font-medium">
+                  Deploy on your infrastructure with Docker & Kubernetes.
+                </p>
+                <ul className="space-y-2 text-sm text-green-800">
+                  <li className="flex items-start">
+                    <Award className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Docker isolation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Award className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Auto-scaling with KEDA</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Award className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>Production ready</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-orange-600 mb-12">Quick Comparison</h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-orange-50 border-b-2 border-orange-200">
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">Feature</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-900">Free Microservice</th>
+                  <th className="px-4 py-3 text-center font-semibold text-orange-700 bg-orange-100">Self-Host</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-200">
+                  <td className="px-4 py-3 font-medium text-gray-900">Security</td>
+                  <td className="px-4 py-3 text-center text-gray-600">Basic</td>
+                  <td className="px-4 py-3 text-center bg-green-50 text-green-700 font-semibold">Docker Isolated</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="px-4 py-3 font-medium text-gray-900">Performance</td>
+                  <td className="px-4 py-3 text-center text-gray-600">Slow starts</td>
+                  <td className="px-4 py-3 text-center bg-green-50 text-green-700 font-semibold">Fast</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="px-4 py-3 font-medium text-gray-900">Auto-scaling</td>
+                  <td className="px-4 py-3 text-center text-gray-600">Fixed</td>
+                  <td className="px-4 py-3 text-center bg-green-50 text-green-700 font-semibold">✓ KEDA</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="px-4 py-3 font-medium text-gray-900">Best For</td>
+                  <td className="px-4 py-3 text-center text-gray-600">Testing</td>
+                  <td className="px-4 py-3 text-center bg-green-50 text-green-700 font-semibold">Production</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-8 bg-orange-50 border-2 border-orange-300 rounded-lg p-6">
+            <div className="flex items-start gap-4">
+              <Cloud className="h-8 w-8 text-orange-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="text-xl font-bold text-orange-900 mb-2">For Production Apps</h3>
+                <p className="text-orange-800 mb-4">
+                  Self-hosting gives you better security, performance, and auto-scaling. Perfect for production
+                  workloads.
+                </p>
+                <Link href="/selfhost">
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">View Self-Host Guide</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Get Started in 2 Steps</h2>
+
+          <div className="space-y-6">
+            <Card className="border-l-4 border-l-blue-600">
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg text-blue-900">
+                  <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">
+                    1
+                  </span>
+                  Install NPM Library
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-900 text-blue-400 p-4 rounded-lg font-mono text-sm mb-3">
+                  npm install judgelib
+                </div>
+                <div className="space-y-3">
+                  <Link href="/npm" className="flex items-start group">
+                    <LightbulbIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mr-2 group-hover:text-blue-700" />
+                    <span className="text-sm text-blue-800 group-hover:text-blue-900">
+                      This library is required for all deployments.
+                    </span>
+                  </Link>
+                  <Link href="/npm" className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors">
+                    View NPM Documentation
+                    <Package className="ml-2 h-4 w-4" />
+                  </Link>
+                </div>
+
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-orange-600 bg-orange-50">
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg text-orange-900">
+                  <span className="bg-orange-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">
+                    2
+                  </span>
+                  Choose Your Backend
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="border rounded-lg p-4 hover:border-gray-400 bg-white transition-colors">
+                    <h4 className="font-semibold mb-2">Free Microservice</h4>
+                    <p className="text-sm text-gray-600 mb-3">Use our hosted service</p>
+                    <Link href="/microservice">
+                      <Button variant="outline" size="sm" className="w-full bg-transparent">
+                        Learn More
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="p-4 border rounded-lg">
-                    <Terminal className="w-6 h-6 text-orange-500 mb-2" />
-                    <h4 className="font-semibold mb-2">Microservice</h4>
-                    <p className="text-sm text-gray-600">HTTP API service (free tier on Render)</p>
-                  </div>
-                  <div className="p-4 border rounded-lg border-blue-200 bg-blue-50">
-                    <Cloud className="w-6 h-6 text-blue-500 mb-2" />
-                    <h4 className="font-semibold mb-2 text-blue-900">Self-Host</h4>
-                    <p className="text-sm text-blue-700">Docker + Kubernetes on any cloud</p>
-                    <Badge className="mt-2 bg-blue-500">Recommended</Badge>
+                  <div className="border-2 border-green-400 bg-green-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-green-900 mb-2">Self-Host</h4>
+                    <p className="text-sm text-green-800 mb-3">Deploy yourself - Recommended</p>
+                    <Link href="/selfhost">
+                      <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
+                        Learn More
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -198,89 +253,8 @@ export default function DocsPage() {
         </div>
       </section>
 
-
-
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                Judge<span className="text-orange-500">Lib</span>
-              </h3>
-              <p className="text-gray-400 text-sm">The most reliable code execution engine for developers.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/microservice" className="hover:text-orange-500 transition-colors">
-                    Microservice
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/npm" className="hover:text-orange-500 transition-colors">
-                    NPM Library
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/selfhost" className="hover:text-orange-500 transition-colors">
-                    Self-Host
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Developers</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/docs" className="hover:text-orange-500 transition-colors">
-                    API Reference
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    SDKs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Examples
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Community
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    GitHub
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-orange-500 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} JudgeLib. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

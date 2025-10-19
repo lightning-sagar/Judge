@@ -165,7 +165,7 @@ export function PingWorker() {
       </Button>
 
       {isOpen && (
-        <Card className="absolute top-full mt-2 w-80 z-50 shadow-lg">
+        <Card className="absolute top-full mt-2 w-80 z-10 shadow-lg">
           <CardContent className="p-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
