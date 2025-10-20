@@ -54,27 +54,36 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Performance Overview</h2>
             <p className="text-lg text-gray-600">
-              Scalable execution engine built for reliability and speed 
+              Self-hosted, Docker-isolated, and KEDA-powered — JudgeLib delivers reliable, scalable code execution across distributed workers.
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">3</div>
-              <div className="text-sm text-gray-600">Languages Supported</div>
+              <div className="text-sm text-gray-600">Supported Languages (Python, C++, Java)</div>
             </div>
+
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">≈100K</div>
-              <div className="text-sm text-gray-600">Executions per Day (20 Replicas)</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">∞</div>
+              <div className="text-sm text-gray-600">Scalable Executions (Limited by Cluster Resources)</div>
             </div>
+
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">30s → 20s</div>
-              <div className="text-sm text-gray-600">Avg Judge Time (12 → 20 Workers)</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">~0.8s – 2.5s</div>
+              <div className="text-sm text-gray-600">Avg Execution Time (varies by pods & language)</div>
             </div>
+
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">99.2%</div>
-              <div className="text-sm text-gray-600">Uptime (Cluster-managed)</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">99.9%</div>
+              <div className="text-sm text-gray-600">Uptime (Self-Hosted with KEDA Auto-scaling)</div>
             </div>
+          </div>
+
+          <div className="mt-12 text-center text-gray-500 text-sm">
+            <p>
+              *Metrics are approximate and depend on active pods, system load, and test case complexity in the Kubernetes cluster.
+            </p>
           </div>
         </div>
       </section>
