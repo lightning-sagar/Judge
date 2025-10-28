@@ -170,26 +170,33 @@ async function processJob(ques_name, code, language, testcases) {
       )
     );
     console.log(results, "this is results");
-    // Store job result
+
+    // ✅ Added log before pushing result to Redis
+    console.log(`[Redis Push] 🟢 Storing job:${ques_name}:result`);
+
     await redis_server.setEx(
       `job:${ques_name}:result`,
       300,
       JSON.stringify(results)
     );
-    await redis_server.hSet(`job:${ques_name}:status`, {
-      state: "completed",
-    });
+    console.log(`[Redis Push] ✅ Result stored successfully`);
+
+    console.log(`[Redis Push] 🟢 Updating job:${ques_name}:status -> completed`);
+    await redis_server.hSet(`job:${ques_name}:status`, { state: "completed" });
     await redis_server.expire(`job:${ques_name}:status`, 300);
+    console.log(`[Redis Push] ✅ Status updated successfully`);
+
   } catch (err) {
     console.error("Error during job processing:", err);
+
+    console.log(`[Redis Push] 🔴 Storing failed state for job:${ques_name}`);
     await redis_server.setEx(
       `job:${ques_name}:result`,
       30,
       JSON.stringify([{ error: err.toString() }])
     );
-    await redis_server.hSet(`job:${ques_name}:status`, {
-      state: "failed",
-    });
+    await redis_server.hSet(`job:${ques_name}:status`, { state: "failed" });
+    console.log(`[Redis Push] ❌ Failure recorded in Redis`);
   } finally {
     try {
       fs.unlinkSync(filePath);
