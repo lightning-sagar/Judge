@@ -39,12 +39,13 @@ const redis_server = await connectredis();
 async function compileCode(language, codePath, execPath) {
   if (language === "cpp") {
     return new Promise((resolve, reject) => {
-      console.log("checks: ",codePath,execPath,language)
+      console.log("checks: ", codePath, execPath, language);
       exec(
         `g++ "${codePath}" -o "${execPath}"`,
         { timeout: 10000 },
         (err, _, stderr) => {
-          if (err) return reject("C++ Compilation Error:\n" + stderr || error.message);
+          if (err)
+            return reject("C++ Compilation Error:\n" + stderr || error.message);
           resolve();
         }
       );
@@ -174,18 +175,26 @@ async function processJob(ques_name, code, language, testcases) {
     // ✅ Added log before pushing result to Redis
     console.log(`[Redis Push] 🟢 Storing job:${ques_name}:result`);
 
-    await redis_server.setEx(
-      `job:${ques_name}:result`,
-      300,
+    await redis_server.rPush(
+      `results_queue:${ques_name}`,
       JSON.stringify(results)
     );
+    await redis_server.expire(`results_queue:${ques_name}`, 300);
+    await redis_server.hIncrBy(
+      `job:${ques_name}:status`,
+      "completedBatches",
+      1
+    );
+    console.log(`[Worker] 🧮 Incremented completedBatches for ${ques_name}`);
+
     console.log(`[Redis Push] ✅ Result stored successfully`);
 
-    console.log(`[Redis Push] 🟢 Updating job:${ques_name}:status -> completed`);
+    console.log(
+      `[Redis Push] 🟢 Updating job:${ques_name}:status -> completed`
+    );
     await redis_server.hSet(`job:${ques_name}:status`, { state: "completed" });
     await redis_server.expire(`job:${ques_name}:status`, 300);
     console.log(`[Redis Push] ✅ Status updated successfully`);
-
   } catch (err) {
     console.error("Error during job processing:", err);
 
@@ -259,7 +268,6 @@ async function pollForJobs() {
 
       // ⚠️ Don't increment completedBatches here
       // It's already handled safely inside processJob()
-
     } catch (err) {
       console.error("[Worker] 💥 Error while polling job:", err);
       await new Promise((resolve) => setTimeout(resolve, 2000)); // avoid busy loop

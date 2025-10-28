@@ -55,7 +55,7 @@ function createTestcase() {
   const inputs = [];
   const outputs = [];
 
-  for (let i = 0; i < 10_000; i++) {
+  for (let i = 0; i < 5; i++) {
     // create 10 numbers for this test case
     const arr = Array.from({ length: 10 }, (_, idx) => idx + 1).join(" ");
     inputs.push(`10 ${arr}`);  // first number is n=10
