@@ -205,46 +205,57 @@ async function processJob(ques_name, code, language, testcases) {
 async function pollForJobs() {
   while (true) {
     try {
-      // Fetch a job name
-      const result = await redis_server.brPop("job_queue", 30);
+      // Wait for a batch job name from Redis queue
+      const result = await redis_server.brPop("job_queue", 0);
 
       if (!result) {
-        console.warn("[Worker] BRPOP returned empty");
+        console.warn("[Worker] BRPOP returned empty, waiting...");
         continue;
       }
 
-      const batchName = result.element;   
-      const ques_name = batchName.split("_batch_")[0]; 
-      console.log(`[Worker] Got job: ${ques_name}`);
+      const batchName = result.element;
+      const ques_name = batchName.split("_batch_")[0];
+      console.log(`[Worker] 🧩 Got job batch: ${batchName}`);
 
-      // Fetch code & language (from Redis Hash or DB)
+      // Fetch code & language from Redis
       const code = await redis_server.hGet(ques_name, "code");
       const language = await redis_server.hGet(ques_name, "language");
 
-      // Get next batch of test cases
-      const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
-
-      if (!batchData) {
-        console.warn(`[Worker] No batch found for ${ques_name}`);
+      if (!code || !language) {
+        console.error(`[Worker] ❌ Missing code or language for ${ques_name}`);
         continue;
       }
 
-      const testcases = JSON.parse(batchData);
+      // Fetch testcases for this batch
+      const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
+      if (!batchData) {
+        console.warn(`[Worker] ⚠️ No testcases found for batch ${batchName}`);
+        continue;
+      }
 
-      // Process the job
+      let testcases;
+      try {
+        testcases = JSON.parse(batchData);
+      } catch (err) {
+        console.error(`[Worker] ❌ JSON parse error for ${batchName}:`, err);
+        continue;
+      }
+
+      console.log(
+        `[Worker] 🧠 Processing ${testcases.length} testcases for ${ques_name}...`
+      );
+
+      // Run batch
       await processJob(ques_name, code, language, testcases);
 
-      // Update status
-      await redis_server.hIncrBy(
-        `job:${ques_name}:status`,
-        "completedBatches",
-        1
-      );
-      console.log(
-        `[Worker] Completed one batch of ${testcases.length} for ${ques_name}`
-      );
+      console.log(`[Worker] ✅ Completed batch for ${ques_name}`);
+
+      // ⚠️ Don't increment completedBatches here
+      // It's already handled safely inside processJob()
+
     } catch (err) {
-      console.error("[Worker] Error while polling job:", err);
+      console.error("[Worker] 💥 Error while polling job:", err);
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // avoid busy loop
     }
   }
 }
