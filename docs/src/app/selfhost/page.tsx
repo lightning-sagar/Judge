@@ -590,13 +590,13 @@ export default function SelfHostPage() {
                     variant="ghost"
                     className="text-gray-400 hover:text-white"
                     onClick={() =>
-                      handleCopyCode(" docker pull lightningsagar/worker:fe77892aac4a6a931db0fada9b357dbc7778b198
+                      handleCopyCode(" docker pull lightningsagar/worker:f968242ac42ad4b6757beb550cf1bd6d44a126e9
                     }
                   >
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
-                <code>  docker pull lightningsagar/worker:fe77892aac4a6a931db0fada9b357dbc7778b198
+                <code>  docker pull lightningsagar/worker:f968242ac42ad4b6757beb550cf1bd6d44a126e9
                   </code>
               </div>
             </div>
