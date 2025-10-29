@@ -140,7 +140,7 @@ spec:
                 operator: Exists
       containers:
         - name: judge-worker
-          image: lightningsagar/worker:210b8cfd943b24e7381c4c8f1f3114c2d1fd3d81
+          image: lightningsagar/worker:fe77892aac4a6a931db0fada9b357dbc7778b198
           imagePullPolicy: Always
           ports:
             - containerPort: 3000  # Changed from 5000 to match PORT env
