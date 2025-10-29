@@ -143,7 +143,7 @@ function runTestcase(
   });
 }
 
-async function processJob(ques_name, code, language, testcases) {
+async function processJob(ques_name, code, language, testcases, batchName) {
   const extension =
     language === "cpp" ? "cpp" : language === "java" ? "java" : "py";
   const fileName = `${ques_name}.${extension}`;
@@ -175,7 +175,7 @@ async function processJob(ques_name, code, language, testcases) {
     const chunkSize = 1000;
     for (let i = 0; i < results.length; i += chunkSize) {
       const chunk = results.slice(i, i + chunkSize);
-      await redis_server.rPush(`results_queue:${ques_name}:${batchName}`, JSON.stringify(chunk));
+      await redis_server.rPush(`results_queue:${ques_name}`, JSON.stringify(chunk));
     }
     await redis_server.expire(`results_queue:${ques_name}`, 300);
 
@@ -247,7 +247,7 @@ async function pollForJobs() {
       );
 
       // Run batch
-      await processJob(ques_name, code, language, testcases);
+      await processJob(ques_name, code, language, testcases, batchName);
 
       console.log(`[Worker] ✅ Completed batch for ${ques_name}`);
 
