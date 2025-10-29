@@ -72,7 +72,7 @@ console.log(result);
 
 Install this library in your app to submit code for evaluation.
 
-* Splits code into test cases
+* Splits test cases into batches
 * Sends to Redis queue
 * Retrieves results back
 

@@ -21,7 +21,7 @@ export default function NPMPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Judge<span className="text-orange-600">Lib</span> NPM Library</h1>
             <p className="text-xl text-gray-600 mb-8">
-              A distributed code-execution library that divides test cases into batches, stores them in Redis,
+              A distributed code-execution library that divides large test cases into batches, stores them in Redis,
               and executes them efficiently using background workers.
             </p>
             <div className="bg-gray-900 rounded-lg p-4 text-green-400 font-mono text-lg mb-8 max-w-md mx-auto">

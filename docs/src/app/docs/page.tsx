@@ -50,7 +50,7 @@ export default function DocsPage() {
                 <ul className="space-y-2 text-sm text-blue-800">
                   <li className="flex items-start">
                     <Lightbulb className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Splits code into test cases</span>
+                    <span>Splits test cases into batches</span>
                   </li>
                   <li className="flex items-start">
                     <Lightbulb className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
