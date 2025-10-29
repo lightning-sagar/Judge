@@ -14,7 +14,7 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
-    "lib-judge": "^1.2.7",
+    "lib-judge": "^1.2.11",
     "uid-safe": "^2.1.5"
   }
 }

@@ -170,51 +170,35 @@ async function processJob(ques_name, code, language, testcases) {
         )
       )
     );
-    console.log(results, "this is results");
 
-    // ✅ Added log before pushing result to Redis
-    console.log(`[Redis Push] 🟢 Storing job:${ques_name}:result`);
+    // Split large result into chunks of 1000 entries
+    const chunkSize = 1000;
+    for (let i = 0; i < results.length; i += chunkSize) {
+      const chunk = results.slice(i, i + chunkSize);
+      await redis_server.rPush(`results_queue:${ques_name}:${batchName}`, JSON.stringify(chunk));
+    }
+    await redis_server.expire(`results_queue:${ques_name}`, 300);
+
+
+    await redis_server.hIncrBy(`job:${ques_name}:status`, "completedBatches", 1);
+    console.log(`[Worker ✅] Batch completed for ${ques_name}`);
+
+  } catch (err) {
+    console.error(`[Worker ❌] Batch failed for ${ques_name}:`, err);
+
+    // still increment to prevent job hang
+    await redis_server.hIncrBy(`job:${ques_name}:status`, "completedBatches", 1);
 
     await redis_server.rPush(
       `results_queue:${ques_name}`,
-      JSON.stringify(results)
+      JSON.stringify([{ error: err.toString(), crashed: true }])
     );
-    await redis_server.expire(`results_queue:${ques_name}`, 300);
-    await redis_server.hIncrBy(
-      `job:${ques_name}:status`,
-      "completedBatches",
-      1
-    );
-    console.log(`[Worker] 🧮 Incremented completedBatches for ${ques_name}`);
-
-    console.log(`[Redis Push] ✅ Result stored successfully`);
-
-    console.log(
-      `[Redis Push] 🟢 Updating job:${ques_name}:status -> completed`
-    );
-    await redis_server.hSet(`job:${ques_name}:status`, { state: "completed" });
-    await redis_server.expire(`job:${ques_name}:status`, 300);
-    console.log(`[Redis Push] ✅ Status updated successfully`);
-  } catch (err) {
-    console.error("Error during job processing:", err);
-
-    console.log(`[Redis Push] 🔴 Storing failed state for job:${ques_name}`);
-    await redis_server.setEx(
-      `job:${ques_name}:result`,
-      30,
-      JSON.stringify([{ error: err.toString() }])
-    );
-    await redis_server.hSet(`job:${ques_name}:status`, { state: "failed" });
-    console.log(`[Redis Push] ❌ Failure recorded in Redis`);
   } finally {
-    try {
-      fs.unlinkSync(filePath);
-    } catch {}
+    try { fs.unlinkSync(filePath); } catch { }
     try {
       if (language === "cpp") fs.unlinkSync(execPath);
-      if (language === "java")
-        fs.unlinkSync(filePath.replace(".java", ".class"));
-    } catch {}
+      if (language === "java") fs.unlinkSync(filePath.replace(".java", ".class"));
+    } catch { }
   }
 }
 
@@ -243,7 +227,8 @@ async function pollForJobs() {
       }
 
       // Fetch testcases for this batch
-      const batchData = await redis_server.lPop(`testcase_queue:${batchName}`);
+      const batchDataResult = await redis_server.brPop(`testcase_queue:${batchName}`, 0);
+      const batchData = batchDataResult ? batchDataResult.element : null;
       if (!batchData) {
         console.warn(`[Worker] ⚠️ No testcases found for batch ${batchName}`);
         continue;
